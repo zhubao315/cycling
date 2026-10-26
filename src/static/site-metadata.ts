@@ -2,6 +2,11 @@ interface ISiteMetadataResult {
   siteTitle: string;
   siteUrl: string;
   description: string;
+  tagline?: string;
+  accent?: string;
+  accent2?: string;
+  sportLabel?: string;
+  repoUrl?: string;
   logo: string;
   navLinks: {
     name: string;
@@ -14,6 +19,11 @@ const data: ISiteMetadataResult = {
   siteUrl: 'https://zhubao315.github.io/cycling/',
   logo: 'https://avatars.githubusercontent.com/u/1206487?v=4',
   description: 'zhubao315的骑行生涯 · COROS 自动同步',
+  tagline: '两轮丈量城市与郊野，每一次踩踏都算数。',
+  accent: '#fb923c',
+  accent2: '#f97316',
+  sportLabel: '骑行',
+  repoUrl: 'https://github.com/zhubao315/cycling',
   navLinks: [
     {
       name: '跑步',
