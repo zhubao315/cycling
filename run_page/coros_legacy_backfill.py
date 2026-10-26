@@ -76,9 +76,7 @@ def download_one(headers, label, sport, retries=3):
     url = f"{DOWNLOAD_URL}?labelId={label}&sportType={sport}&fileType=4"
     for attempt in range(1, retries + 1):
         try:
-            req = urllib.request.Request(
-                url, data=b"", headers=headers, method="POST"
-            )
+            req = urllib.request.Request(url, data=b"", headers=headers, method="POST")
             body = json.load(urllib.request.urlopen(req, timeout=60))
             file_url = body.get("data", {}).get("fileUrl")
             if body.get("result") != "0000" or not file_url:

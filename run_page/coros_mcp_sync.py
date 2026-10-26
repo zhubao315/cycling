@@ -497,9 +497,7 @@ def tidy_generated_json(sport="running"):
             activity["moving_time"] = moving_time.split(".")[0]
             changed = True
         if not activity.get("name"):
-            activity["name"] = auto_name(
-                activity.get("start_date_local", ""), sport
-            )
+            activity["name"] = auto_name(activity.get("start_date_local", ""), sport)
             changed = True
     if changed:
         with open(JSON_FILE, "w") as f:
