@@ -1,0 +1,19 @@
+{
+  "format": "vert-scene",
+  "version": 1,
+  "bytes": 7953,
+  "hash": "2febab35",
+  "summary": {
+    "distance": 8202,
+    "climb": 67,
+    "drawnLength": 7802,
+    "extent": {
+      "x": 9002,
+      "y": 1995
+    },
+    "trim": {
+      "start": 200,
+      "end": 200
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "format": "vert-scene",
+  "version": 1,
+  "bytes": 4840,
+  "hash": "c2800caf",
+  "summary": {
+    "distance": 4821,
+    "climb": 35,
+    "drawnLength": 4421,
+    "extent": {
+      "x": 5011,
+      "y": 637
+    },
+    "trim": {
+      "start": 200,
+      "end": 200
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "format": "vert-scene",
+  "version": 1,
+  "bytes": 8130,
+  "hash": "cacad868",
+  "summary": {
+    "distance": 8341,
+    "climb": 73,
+    "drawnLength": 7941,
+    "extent": {
+      "x": 9178,
+      "y": 2062
+    },
+    "trim": {
+      "start": 200,
+      "end": 200
+    }
+  }
+}

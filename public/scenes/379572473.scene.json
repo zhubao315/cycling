@@ -1,0 +1,19 @@
+{
+  "format": "vert-scene",
+  "version": 1,
+  "bytes": 14802,
+  "hash": "3d4edbed",
+  "summary": {
+    "distance": 5747,
+    "climb": 45,
+    "drawnLength": 5347,
+    "extent": {
+      "x": 4970,
+      "y": 2058
+    },
+    "trim": {
+      "start": 200,
+      "end": 200
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "format": "vert-scene",
+  "version": 1,
+  "bytes": 8850,
+  "hash": "d6522afc",
+  "summary": {
+    "distance": 8648,
+    "climb": 58,
+    "drawnLength": 8248,
+    "extent": {
+      "x": 9280,
+      "y": 2318
+    },
+    "trim": {
+      "start": 200,
+      "end": 200
+    }
+  }
+}
