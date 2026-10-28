@@ -624,7 +624,9 @@ def main():
     try:
         from dedupe_activities import dedupe_activities
 
-        dedupe_activities(JSON_FILE, SQL_FILE, execute=True, quiet=False, sport=args.sport)
+        dedupe_activities(
+            JSON_FILE, SQL_FILE, execute=True, quiet=False, sport=args.sport
+        )
     except Exception as exc:
         log(f"dedupe_activities failed: {exc}")
     if args.purge_fit:
