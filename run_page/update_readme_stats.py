@@ -26,6 +26,8 @@ def main():
     args = parser.parse_args()
 
     activities = json.loads(Path("src/static/activities.json").read_text())
+    # cycling site displays rides >=3km only (the DB keeps the full archive)
+    activities = [a for a in activities if (a.get("distance") or 0) >= 3000]
     count = len(activities)
     distance = sum(a.get("distance") or 0 for a in activities) / 1000
     climb = sum(a.get("elevation_gain") or 0 for a in activities)

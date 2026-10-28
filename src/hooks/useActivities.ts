@@ -1,6 +1,8 @@
 import { locationForRun, titleForRun } from '@/utils/utils';
 import activities from '@/static/activities.json';
 
+const MIN_DISTANCE_M = 3000;
+
 const useActivities = () => {
   const cities: Record<string, number> = {};
   const runPeriod: Record<string, number> = {};
@@ -9,7 +11,11 @@ const useActivities = () => {
   let years: Set<string> = new Set();
   let thisYear = '';
 
-  activities.forEach((run) => {
+  const visibleActivities = activities.filter(
+    (run) => (run.distance || 0) >= MIN_DISTANCE_M
+  );
+
+  visibleActivities.forEach((run) => {
     const location = locationForRun(run);
 
     const periodName = titleForRun(run);
@@ -34,7 +40,7 @@ const useActivities = () => {
   if (years) [thisYear] = yearsArray; // set current year as first one of years array
 
   return {
-    activities,
+    activities: visibleActivities,
     years: yearsArray,
     countries: [...countries],
     provinces: [...provinces],
