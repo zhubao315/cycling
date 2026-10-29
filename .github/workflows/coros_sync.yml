@@ -66,6 +66,16 @@ jobs:
         # COROS allows 50 FIT downloads per day; stop at 45 and let the next
         # run pick up anything left over.
 
+      # Imported (codoon) FIT data can carry GPS-glitch clusters kilometres
+      # away from the real route; clean the allowlisted run ids on every sync
+      # so the rebuild below never reintroduces them.
+      - name: Filter GPS drift clusters
+        run: |
+          python run_page/fix_gps_drift.py \
+            --json src/static/activities.json \
+            --db run_page/data.db \
+            --run-id 9223370427974524707
+
       - name: Regenerate SVG charts
         run: |
           python run_page/gen_svg.py --from-db --title "${{ env.TITLE }}" --type github --github-style "align-firstday" --athlete "${{ env.ATHLETE }}" --special-distance 10 --special-distance2 20 --special-color yellow --special-color2 red --output assets/github.svg --use-localtime --min-distance 3
