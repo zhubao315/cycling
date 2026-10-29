@@ -76,14 +76,19 @@ def main():
         print("Nothing to convert.")
         return 0
 
-    print(f"{'date':<12}{'dist km':>9}{'el raw':>10}{'ratio m/km':>12}"
-          f"{'el as m':>10}")
+    print(
+        f"{'date':<12}{'dist km':>9}{'el raw':>10}{'ratio m/km':>12}" f"{'el as m':>10}"
+    )
     for a, ratio in sorted(targets, key=lambda x: x[0]["start_date_local"]):
         el = a["elevation_gain"]
-        print(f"{a['start_date_local'][:10]:<12}{a['distance']/1000:9.1f}"
-              f"{el:10.0f}{ratio:12.1f}{el*FT_TO_M:10.1f}")
-    print(f"\n{len(targets)} row(s) matched (years {sorted(years)}, "
-          f"ratio > {args.ratio} m/km)")
+        print(
+            f"{a['start_date_local'][:10]:<12}{a['distance']/1000:9.1f}"
+            f"{el:10.0f}{ratio:12.1f}{el*FT_TO_M:10.1f}"
+        )
+    print(
+        f"\n{len(targets)} row(s) matched (years {sorted(years)}, "
+        f"ratio > {args.ratio} m/km)"
+    )
 
     if not args.execute:
         print("Dry run; pass --execute to write changes.")
@@ -123,9 +128,11 @@ def main():
         default=None,
     )
     if mx:
-        print(f"\nNew dataset-wide max elevation: {mx['elevation_gain']:.1f} m "
-              f"on {mx['start_date_local'][:10]} "
-              f"({mx['distance']/1000:.1f} km)")
+        print(
+            f"\nNew dataset-wide max elevation: {mx['elevation_gain']:.1f} m "
+            f"on {mx['start_date_local'][:10]} "
+            f"({mx['distance']/1000:.1f} km)"
+        )
     return 0
 
 
