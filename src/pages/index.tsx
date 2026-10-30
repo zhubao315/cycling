@@ -15,7 +15,6 @@ import { sceneHashOf } from '@/vert/scenes';
 import {
   IViewState,
   filterCityRuns,
-  filterTitleRuns,
   geoJsonForRuns,
   getBoundsForGeoData,
   scrollToMap,
@@ -26,9 +25,11 @@ import {
   buildDataset,
   buildYearSeries,
   computeTotals,
+  filterRunsByPeriod,
   filterRunsByScope,
   formatDistanceKm,
   formatNumber,
+  periodLabelOfKey,
   scopeLabel,
   type MetricKey,
   type RunScope,
@@ -36,7 +37,7 @@ import {
 import styles from '@/components/CyclingDashboard/style.module.css';
 
 type QuickFilter = {
-  kind: 'city' | 'title';
+  kind: 'city' | 'period';
   value: string;
 } | null;
 
@@ -63,16 +64,18 @@ const Index = () => {
   );
 
   const filterNote = quickFilter
-    ? `${quickFilter.kind === 'city' ? '城市' : '类型'} · ${
-        quickFilter.value
+    ? `${quickFilter.kind === 'city' ? '城市' : '时段'} · ${
+        quickFilter.kind === 'period'
+          ? periodLabelOfKey(quickFilter.value)
+          : quickFilter.value
       }`
     : null;
 
-  // City / run-type shortcuts narrow the whole dashboard, not just the table.
+  // City / period shortcuts narrow the whole dashboard, not just the table.
   const baseRuns = useMemo(() => {
     if (!quickFilter) return runs;
     const predicate =
-      quickFilter.kind === 'city' ? filterCityRuns : filterTitleRuns;
+      quickFilter.kind === 'city' ? filterCityRuns : filterRunsByPeriod;
     return runs.filter((run) => predicate(run, quickFilter.value));
   }, [runs, quickFilter]);
 
@@ -184,7 +187,7 @@ const Index = () => {
   }, []);
 
   const selectQuickFilter = useCallback(
-    (kind: 'city' | 'title', value: string) => {
+    (kind: 'city' | 'period', value: string) => {
       setQuickFilter({ kind, value });
       setSelectedYear('all');
       setSelectedMonth(null);
@@ -264,7 +267,7 @@ const Index = () => {
       <section id="journey" className={styles.section}>
         <JourneyStats
           changeCity={(city) => selectQuickFilter('city', city)}
-          changeTitle={(title) => selectQuickFilter('title', title)}
+          changePeriod={(period) => selectQuickFilter('period', period)}
           onViewRun={selectRun}
         />
       </section>
@@ -287,6 +290,10 @@ const Index = () => {
               viewState={viewState}
               geoData={geoData}
               setViewState={setViewState}
+              changeYear={(year) =>
+                selectYear(year === 'Total' ? 'all' : year)
+              }
+              thisYear={selectedYear === 'all' ? 'Total' : selectedYear}
             />
           </div>
 

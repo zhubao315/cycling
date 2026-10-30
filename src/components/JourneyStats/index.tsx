@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import useActivities from '@/hooks/useActivities';
-import { RUN_TITLES } from '@/utils/const';
 import { Activity, convertMovingTime2Sec } from '@/utils/utils';
+import { buildPeriods } from '@/utils/cyclingStats';
 import SectionHeader from '@/components/CyclingDashboard/SectionHeader';
 import styles from './style.module.css';
 
 interface IJourneyStatsProps {
   changeCity: (_city: string) => void;
-  changeTitle: (_title: string) => void;
+  changePeriod: (_periodKey: string) => void;
   onViewRun: (_runId: number) => void;
 }
 
@@ -20,14 +20,6 @@ interface RecordItem {
   run: Activity;
 }
 
-const DAY_SEGMENTS = [
-  { title: RUN_TITLES.MORNING_RUN_TITLE, label: '清晨', alpha: 95 },
-  { title: RUN_TITLES.MIDDAY_RUN_TITLE, label: '午间', alpha: 76 },
-  { title: RUN_TITLES.AFTERNOON_RUN_TITLE, label: '午后', alpha: 58 },
-  { title: RUN_TITLES.EVENING_RUN_TITLE, label: '傍晚', alpha: 44 },
-  { title: RUN_TITLES.NIGHT_RUN_TITLE, label: '夜晚', alpha: 32 },
-];
-
 const fmtDuration = (seconds: number): string => {
   const s = Math.round(seconds);
   const h = Math.floor(s / 3600);
@@ -39,8 +31,8 @@ const fmtDuration = (seconds: number): string => {
 const fmtKm = (meters: number) =>
   Math.round(meters / 1000).toLocaleString('en-US');
 
-const JourneyStats = ({ changeCity, changeTitle, onViewRun }: IJourneyStatsProps) => {
-  const { activities, years, countries, provinces, cities, runPeriod } =
+const JourneyStats = ({ changeCity, changePeriod, onViewRun }: IJourneyStatsProps) => {
+  const { activities, years, countries, provinces, cities } =
     useActivities();
   const [expanded, setExpanded] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<RecordItem | null>(null);
@@ -80,12 +72,8 @@ const JourneyStats = ({ changeCity, changeTitle, onViewRun }: IJourneyStatsProps
       : null;
   const avgHR = hrCount ? Math.round(hrSum / hrCount) : null;
 
-  const periods = DAY_SEGMENTS.map(({ title, label, alpha }) => ({
-    title,
-    label,
-    alpha,
-    count: runPeriod[title] || 0,
-  })).filter((p) => p.count > 0);
+  // Real hour buckets from every visible ride's local start time.
+  const periods = useMemo(() => buildPeriods(activities), [activities]);
   const periodTotal = periods.reduce((sum, p) => sum + p.count, 0);
 
   const records = useMemo<RecordItem[]>(() => {
@@ -178,19 +166,6 @@ const JourneyStats = ({ changeCity, changeTitle, onViewRun }: IJourneyStatsProps
 
     return rows;
   }, [validRuns]);
-
-  const races = [
-    {
-      title: RUN_TITLES.HALF_MARATHON_RUN_TITLE,
-      label: 'Half Marathon / 半程马拉松',
-      count: runPeriod[RUN_TITLES.HALF_MARATHON_RUN_TITLE] || 0,
-    },
-    {
-      title: RUN_TITLES.FULL_MARATHON_RUN_TITLE,
-      label: 'Full Marathon / 全程马拉松',
-      count: runPeriod[RUN_TITLES.FULL_MARATHON_RUN_TITLE] || 0,
-    },
-  ].filter((r) => r.count > 0);
 
   const homeCity = cityArr[0];
   const maxMeters = homeCity ? homeCity[1] : 1;
@@ -301,7 +276,7 @@ const JourneyStats = ({ changeCity, changeTitle, onViewRun }: IJourneyStatsProps
             <div className={styles.periodBar} role="group" aria-label="时段分布">
               {periods.map((p, i) => (
                 <button
-                  key={p.title}
+                  key={p.key}
                   type="button"
                   className={`${styles.periodSeg} ${
                     i === 0 ? styles.segFirst : ''
@@ -310,8 +285,8 @@ const JourneyStats = ({ changeCity, changeTitle, onViewRun }: IJourneyStatsProps
                     flexGrow: p.count,
                     background: `color-mix(in srgb, var(--accent) ${p.alpha}%, transparent)`,
                   }}
-                  onClick={() => changeTitle(p.title)}
-                  title={`${p.label}骑行 · ${p.count} Rides`}
+                  onClick={() => changePeriod(p.key)}
+                  title={`${p.en} · ${p.label}骑行 · ${p.count} Rides`}
                   aria-label={`${p.label} ${p.count} 次`}
                 />
               ))}
@@ -320,10 +295,10 @@ const JourneyStats = ({ changeCity, changeTitle, onViewRun }: IJourneyStatsProps
           <div className={styles.periodLegend}>
             {periods.map((p) => (
               <button
-                key={p.title}
+                key={p.key}
                 type="button"
                 className={styles.legendItem}
-                onClick={() => changeTitle(p.title)}
+                onClick={() => changePeriod(p.key)}
               >
                 <span
                   className={styles.legendDot}
@@ -336,22 +311,6 @@ const JourneyStats = ({ changeCity, changeTitle, onViewRun }: IJourneyStatsProps
               </button>
             ))}
           </div>
-
-          {races.length ? (
-            <div className={styles.races}>
-              {races.map((r) => (
-                <button
-                  key={r.title}
-                  type="button"
-                  className={styles.racePill}
-                  onClick={() => changeTitle(r.title)}
-                >
-                  <span className={styles.raceLabel}>{r.label}</span>
-                  <span className={styles.raceCount}>{r.count} Rides</span>
-                </button>
-              ))}
-            </div>
-          ) : null}
 
           <div className={styles.extraKpis}>
             {avgSpeed ? (

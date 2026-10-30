@@ -104,6 +104,77 @@ export const METRICS: Array<{
 
 export const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
 
+/**
+ * Riding-rhythm periods, bucketed from the real local start hour of every
+ * ride (`start_date_local` HH). No titles, no synthetic names — a ride enters
+ * exactly the bucket its hour belongs to, and only buckets with a real count
+ * are rendered.
+ */
+const PERIOD_BUCKETS: Array<{
+  maxHour: number;
+  key: string;
+  label: string;
+  en: string;
+  alpha: number;
+}> = [
+  { maxHour: 5, key: 'dawn', label: '凌晨', en: 'Dawn', alpha: 96 },
+  { maxHour: 8, key: 'early', label: '清晨', en: 'Early AM', alpha: 84 },
+  { maxHour: 11, key: 'morning', label: '上午', en: 'Morning', alpha: 70 },
+  { maxHour: 17, key: 'afternoon', label: '午后', en: 'Afternoon', alpha: 56 },
+  { maxHour: 20, key: 'evening', label: '傍晚', en: 'Evening', alpha: 42 },
+  { maxHour: 23, key: 'night', label: '夜晚', en: 'Night', alpha: 28 },
+];
+
+export interface PeriodStat {
+  key: string;
+  label: string;
+  en: string;
+  alpha: number;
+  count: number;
+}
+
+export const periodKeyOfRun = (run: Activity): string => {
+  const hour = Number(run.start_date_local?.slice(11, 13));
+  if (!Number.isFinite(hour) || hour < 0 || hour > 23) return '';
+  for (const bucket of PERIOD_BUCKETS) {
+    if (hour <= bucket.maxHour) return bucket.key;
+  }
+  return '';
+};
+
+/** Real-count period stats; buckets with zero rides are dropped, never shown as 0. */
+export const buildPeriods = (
+  runs: readonly Activity[]
+): PeriodStat[] => {
+  const counts = new Map<string, number>();
+  for (const run of runs) {
+    const key = periodKeyOfRun(run);
+    if (!key) continue;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return PERIOD_BUCKETS.map(({ key, label, en, alpha }) => ({
+    key,
+    label,
+    en,
+    alpha,
+    count: counts.get(key) ?? 0,
+  })).filter((period) => period.count > 0);
+};
+
+/** Quick-filter predicate: keep rides whose real start hour falls in `key`. */
+export const filterRunsByPeriod = (
+  run: RunRecord,
+  key: string
+): boolean => periodKeyOfRun(run) === key;
+
+/** Chinese display label for a period key ('evening' → '傍晚'). */
+export const periodLabelOfKey = (key: string): string => {
+  for (const bucket of PERIOD_BUCKETS) {
+    if (bucket.key === key) return bucket.label;
+  }
+  return key;
+};
+
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 const number = (value: number): string =>
