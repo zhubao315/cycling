@@ -1,0 +1,70 @@
+import { useMemo } from 'react';
+import SectionHeader from './SectionHeader';
+import useSiteMetadata from '@/hooks/useSiteMetadata';
+import {
+  computeGeo,
+  computeTotals,
+  formatNumber,
+  type RunRecord,
+} from '@/utils/cyclingStats';
+import styles from './style.module.css';
+
+const dotDate = (date: string | null): string =>
+  date ? date.replaceAll('-', '.') : '—';
+
+interface IProfileProps {
+  runs: RunRecord[];
+}
+
+const Profile = ({ runs }: IProfileProps) => {
+  const meta = useSiteMetadata();
+  const totals = useMemo(() => computeTotals(runs), [runs]);
+  const geo = useMemo(() => computeGeo(runs), [runs]);
+
+  const firstYear = totals.firstDate?.slice(0, 4) ?? '';
+  const lastYear = totals.lastDate?.slice(0, 4) ?? '';
+  const span = firstYear && lastYear ? `${firstYear}—${lastYear}` : '';
+
+  return (
+    <section className={styles.profile} aria-labelledby="profile-title">
+      <SectionHeader index="01" kicker="CYCLING PROFILE" title="个人骑行档案" />
+      <div className={styles.profileIdentity}>
+        <img className={styles.avatar} src={meta.logo} alt="" />
+        <div className={styles.profileText}>
+          <h1 id="profile-title" className={styles.profileTitle}>
+            {meta.siteTitle}
+          </h1>
+          {span ? <p className={styles.profileYear}>{span}</p> : null}
+          {meta.tagline ? (
+            <p className={styles.tagline}>{meta.tagline}</p>
+          ) : null}
+          <p className={styles.profileFoot}>
+            {formatNumber(totals.count)} 次骑行 · {geo.countries.length} 个国家 ·{' '}
+            {geo.provinces.length} 个省份 · {geo.cities.length} 座城市
+          </p>
+        </div>
+      </div>
+
+      <dl className={styles.facts}>
+        <div className={styles.fact}>
+          <dt>首次骑行</dt>
+          <dd title={totals.firstDate ?? ''}>{dotDate(totals.firstDate)}</dd>
+        </div>
+        <div className={styles.fact}>
+          <dt>最近一次</dt>
+          <dd title={totals.lastDate ?? ''}>{dotDate(totals.lastDate)}</dd>
+        </div>
+        <div className={styles.fact}>
+          <dt>骑行活跃日</dt>
+          <dd>{formatNumber(totals.activeDays)} 天</dd>
+        </div>
+        <div className={styles.fact}>
+          <dt>主要骑行区域</dt>
+          <dd>{geo.homeProvince ?? '—'}</dd>
+        </div>
+      </dl>
+    </section>
+  );
+};
+
+export default Profile;

@@ -1,65 +1,63 @@
 import { useMemo, useState } from 'react';
 import useActivities from '@/hooks/useActivities';
+import { RUN_TITLES } from '@/utils/const';
 import { Activity, convertMovingTime2Sec } from '@/utils/utils';
+import SectionHeader from '@/components/CyclingDashboard/SectionHeader';
 import styles from './style.module.css';
 
 interface IJourneyStatsProps {
   changeCity: (_city: string) => void;
   changeTitle: (_title: string) => void;
+  onViewRun: (_runId: number) => void;
 }
 
 const PREVIEW_CITIES = 8;
 
-interface RecordRow {
+interface RecordItem {
   label: string;
   value: string;
   date: string;
+  run: Activity;
 }
 
-interface Records {
-  pbRows: RecordRow[];
-  prRows: RecordRow[];
-}
+const DAY_SEGMENTS = [
+  { title: RUN_TITLES.MORNING_RUN_TITLE, label: '清晨', alpha: 95 },
+  { title: RUN_TITLES.MIDDAY_RUN_TITLE, label: '午间', alpha: 76 },
+  { title: RUN_TITLES.AFTERNOON_RUN_TITLE, label: '午后', alpha: 58 },
+  { title: RUN_TITLES.EVENING_RUN_TITLE, label: '傍晚', alpha: 44 },
+  { title: RUN_TITLES.NIGHT_RUN_TITLE, label: '夜晚', alpha: 32 },
+];
 
 const fmtDuration = (seconds: number): string => {
   const s = Math.round(seconds);
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
-  return [h, m, s % 60].map((n) => String(n).padStart(2, '0')).join(':');
+  const sec = s % 60;
+  return [h, m, sec].map((n) => String(n).padStart(2, '0')).join(':');
 };
-
-// 最快时间：用单次骑行的平均速度推算，骑量不足该距离则不计。
-const FAST_DISTANCES = [
-  { label: '20 公里', meters: 20000 },
-  { label: '50 公里', meters: 50000 },
-  { label: '100 公里', meters: 100000 },
-  { label: '160 公里', meters: 160000 },
-];
-
-// 一天里的顺序：清晨 → 午间 → 午后 → 傍晚 → 夜骑；alpha 越小颜色越暗。
-// 骑行数据的标题（晨骑/傍晚骑行/夜骑…）与跑步站的时段常量不同，
-// 直接按 start_date_local 的小时分桶，口径与 titleForRun 保持一致。
-const DAY_SEGMENTS = [
-  { label: '清晨', alpha: 95, minHour: 0, maxHour: 10 },
-  { label: '午间', alpha: 76, minHour: 10, maxHour: 14 },
-  { label: '午后', alpha: 58, minHour: 14, maxHour: 18 },
-  { label: '傍晚', alpha: 44, minHour: 18, maxHour: 21 },
-  { label: '夜骑', alpha: 32, minHour: 21, maxHour: 24 },
-];
 
 const fmtKm = (meters: number) =>
   Math.round(meters / 1000).toLocaleString('en-US');
 
-const JourneyStats = ({ changeCity }: IJourneyStatsProps) => {
-  const { activities, years, countries, provinces, cities } = useActivities();
+const JourneyStats = ({ changeCity, changeTitle, onViewRun }: IJourneyStatsProps) => {
+  const { activities, years, countries, provinces, cities, runPeriod } =
+    useActivities();
   const [expanded, setExpanded] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<RecordItem | null>(null);
 
   const cityArr = useMemo(
     () => Object.entries(cities).sort((a, b) => b[1] - a[1]),
     [cities]
   );
 
-  // 与 YearStat 的 Total 行同一套算法：只统计有速度/心率的记录，缺失不补零。
+  const validRuns = useMemo(
+    () =>
+      (activities as Activity[]).filter(
+        (a) => a.type === 'cycling' && a.distance > 0 && a.average_speed > 0
+      ),
+    [activities]
+  );
+
   let totalMeters = 0;
   let totalSeconds = 0;
   let hrSum = 0;
@@ -76,121 +74,148 @@ const JourneyStats = ({ changeCity }: IJourneyStatsProps) => {
     }
     if (run.streak) streak = Math.max(streak, run.streak);
   });
-  const avgSpeed = totalSeconds ? totalMeters / totalSeconds : null;
+  const avgSpeed =
+    totalSeconds > 0
+      ? ((totalMeters / totalSeconds) * 3.6).toFixed(1)
+      : null;
   const avgHR = hrCount ? Math.round(hrSum / hrCount) : null;
 
-  const periods = DAY_SEGMENTS.map(({ label, alpha, minHour, maxHour }) => ({
+  const periods = DAY_SEGMENTS.map(({ title, label, alpha }) => ({
+    title,
     label,
     alpha,
-    count: activities.filter((a) => {
-      const hour = +a.start_date_local.slice(11, 13);
-      return hour >= minHour && hour < maxHour;
-    }).length,
-  }));
+    count: runPeriod[title] || 0,
+  })).filter((p) => p.count > 0);
   const periodTotal = periods.reduce((sum, p) => sum + p.count, 0);
 
-  const milestones = [
-    { label: '半百 50K+', meters: 50000 },
-    { label: '百公里 100K+', meters: 100000 },
-  ].map((m) => ({
-    ...m,
-    count: activities.filter((a) => a.distance >= m.meters).length,
-  }));
+  const records = useMemo<RecordItem[]>(() => {
+    if (!validRuns.length) return [];
+
+    const dateOf = (a: Activity) => a.start_date_local.slice(0, 10);
+
+    const far = validRuns.reduce((a, b) => (b.distance > a.distance ? b : a));
+    const longest = validRuns.reduce((a, b) =>
+      convertMovingTime2Sec(b.moving_time) > convertMovingTime2Sec(a.moving_time)
+        ? b
+        : a
+    );
+    const highestElev = validRuns.reduce((a, b) =>
+      (b.elevation_gain || 0) > (a.elevation_gain || 0) ? b : a
+    );
+    const fastest = validRuns.reduce((a, b) =>
+      b.average_speed > a.average_speed ? b : a
+    );
+
+    // most distance in a day
+    const byDate = new Map<string, Activity[]>();
+    validRuns.forEach((run) => {
+      const date = dateOf(run);
+      const bucket = byDate.get(date);
+      if (bucket) bucket.push(run);
+      else byDate.set(date, [run]);
+    });
+    const bestDayEntry = Array.from(byDate.entries()).reduce<{
+      date: string;
+      runs: Activity[];
+      distance: number;
+    } | null>((current, [date, dayRuns]) => {
+      const distance = dayRuns.reduce((sum, run) => sum + run.distance, 0);
+      if (!current || distance > current.distance) {
+        return { date, runs: dayRuns, distance };
+      }
+      return current;
+    }, null);
+
+    const rows: RecordItem[] = [
+      {
+        label: '最长骑行 / Longest Ride',
+        value: `${(far.distance / 1000).toFixed(2)} km`,
+        date: dateOf(far),
+        run: far,
+      },
+      {
+        label: '最长时长 / Longest Duration',
+        value: fmtDuration(convertMovingTime2Sec(longest.moving_time)),
+        date: dateOf(longest),
+        run: longest,
+      },
+      {
+        label: '最大爬升 / Greatest Elevation',
+        value: `${Math.round(highestElev.elevation_gain || 0)} m`,
+        date: dateOf(highestElev),
+        run: highestElev,
+      },
+      {
+        label: '最高速度 / Highest Average Speed',
+        value: `${(fastest.average_speed * 3.6).toFixed(1)} km/h`,
+        date: dateOf(fastest),
+        run: fastest,
+      },
+    ];
+
+    if (bestDayEntry) {
+      rows.push({
+        label: '单日最多里程 / Most Distance in a Day',
+        value: `${(bestDayEntry.distance / 1000).toFixed(2)} km`,
+        date: bestDayEntry.date,
+        run: bestDayEntry.runs[0],
+      });
+    }
+
+    if (validRuns.some((run) => run.average_heartrate)) {
+      const bestHr = validRuns
+        .filter((run) => run.average_heartrate)
+        .reduce((a, b) =>
+          (b.average_heartrate || 0) > (a.average_heartrate || 0) ? b : a
+        );
+      rows.push({
+        label: '最高平均心率 / Highest Average Heart Rate',
+        value: `${Math.round(bestHr.average_heartrate || 0)} bpm`,
+        date: dateOf(bestHr),
+        run: bestHr,
+      });
+    }
+
+    return rows;
+  }, [validRuns]);
+
+  const races = [
+    {
+      title: RUN_TITLES.HALF_MARATHON_RUN_TITLE,
+      label: 'Half Marathon / 半程马拉松',
+      count: runPeriod[RUN_TITLES.HALF_MARATHON_RUN_TITLE] || 0,
+    },
+    {
+      title: RUN_TITLES.FULL_MARATHON_RUN_TITLE,
+      label: 'Full Marathon / 全程马拉松',
+      count: runPeriod[RUN_TITLES.FULL_MARATHON_RUN_TITLE] || 0,
+    },
+  ].filter((r) => r.count > 0);
 
   const homeCity = cityArr[0];
   const maxMeters = homeCity ? homeCity[1] : 1;
   const shownCities = expanded ? cityArr : cityArr.slice(0, PREVIEW_CITIES);
 
-  const records = useMemo<Records>(() => {
-    const empty: Records = { pbRows: [], prRows: [] };
-    const rides = activities.filter(
-      (a) => a.distance > 0 && a.average_speed > 0
-    );
-    if (!rides.length) return empty;
-
-    const dateOf = (a: Activity) => a.start_date_local.slice(0, 10);
-
-    // 「最长时间」只计真实骑行时长：忘关表的记录（时长 > 2h 且均速
-    // < 5 km/h）不计入；「最快均速」只计 ≥ 5 km 的骑行，避免短途
-    // 刷出虚高均速。
-    const realLong = rides.filter(
-      (a) =>
-        a.average_speed >= 5 / 3.6 ||
-        convertMovingTime2Sec(a.moving_time) <= 2 * 3600
-    );
-    const far = rides.reduce((a, b) => (b.distance > a.distance ? b : a));
-    const longest = (realLong.length ? realLong : rides).reduce((a, b) =>
-      convertMovingTime2Sec(b.moving_time) > convertMovingTime2Sec(a.moving_time)
-        ? b
-        : a
-    );
-    const longRides = rides.filter((a) => a.distance >= 5000);
-    const fastest = (longRides.length ? longRides : rides).reduce((a, b) =>
-      b.average_speed > a.average_speed ? b : a
-    );
-    const climb = rides.reduce(
-      (a, b) => ((b.elevation_gain || 0) > (a.elevation_gain || 0) ? b : a)
-    );
-
-    const pbRows: RecordRow[] = [
-      {
-        label: '最远距离（公里）',
-        value: (far.distance / 1000).toFixed(2),
-        date: dateOf(far),
-      },
-      {
-        label: '最长时间',
-        value: fmtDuration(convertMovingTime2Sec(longest.moving_time)),
-        date: dateOf(longest),
-      },
-      {
-        label: '最大爬升（米）',
-        value: Math.round(climb.elevation_gain || 0).toLocaleString('en-US'),
-        date: dateOf(climb),
-      },
-      {
-        label: '最快均速（公里 / 小时）',
-        value: (fastest.average_speed * 3.6).toFixed(2),
-        date: dateOf(fastest),
-      },
-    ];
-
-    const prRows: RecordRow[] = FAST_DISTANCES.map(({ label, meters }) => {
-      const cands = rides.filter((a) => a.distance >= meters);
-      if (!cands.length) return null;
-      const best = cands.reduce((a, b) =>
-        b.average_speed > a.average_speed ? b : a
-      );
-      return {
-        label,
-        value: fmtDuration(meters / best.average_speed),
-        date: dateOf(best),
-      };
-    }).filter((r): r is RecordRow => r !== null);
-
-    return { pbRows, prRows };
-  }, [activities]);
-
   return (
     <section className={styles.journey} aria-label="Total Journey">
-      <p className={styles.kicker}>Total Journey</p>
+      <SectionHeader index="04" kicker="TOTAL JOURNEY" title="骑行旅程" />
 
       <div className={styles.geoGrid}>
         <div className={styles.geoCell}>
           <span className={styles.geoValue}>{years.length}</span>
-          <span className={styles.geoLabel}>年</span>
+          <span className={styles.geoLabel}>Years / 年</span>
         </div>
         <div className={styles.geoCell}>
           <span className={styles.geoValue}>{countries.length}</span>
-          <span className={styles.geoLabel}>国家</span>
+          <span className={styles.geoLabel}>Countries / 国家</span>
         </div>
         <div className={styles.geoCell}>
           <span className={styles.geoValue}>{provinces.length}</span>
-          <span className={styles.geoLabel}>省份</span>
+          <span className={styles.geoLabel}>Provinces / 省份</span>
         </div>
         <div className={styles.geoCell}>
           <span className={styles.geoValue}>{cityArr.length}</span>
-          <span className={styles.geoLabel}>城市</span>
+          <span className={styles.geoLabel}>Cities / 城市</span>
         </div>
         {homeCity ? (
           <button
@@ -201,7 +226,7 @@ const JourneyStats = ({ changeCity }: IJourneyStatsProps) => {
           >
             <span className={styles.geoValue}>{homeCity[0]}</span>
             <span className={styles.geoLabel}>
-              {fmtKm(homeCity[1])} KM · 主场
+              {fmtKm(homeCity[1])} KM · Home / 主场
             </span>
           </button>
         ) : null}
@@ -211,7 +236,9 @@ const JourneyStats = ({ changeCity }: IJourneyStatsProps) => {
         {cityArr.length ? (
           <div className={styles.cities}>
             <div className={styles.panelHead}>
-              <span className={styles.panelTitle}>城市足迹</span>
+              <span className={styles.panelTitle}>
+                Geographic Footprint / 骑行足迹
+              </span>
               <span className={styles.panelHint}>
                 点击城市，在地图上点亮它的轨迹
               </span>
@@ -265,14 +292,17 @@ const JourneyStats = ({ changeCity }: IJourneyStatsProps) => {
 
         <div className={styles.rhythm}>
           <div className={styles.panelHead}>
-            <span className={styles.panelTitle}>时段节律</span>
+            <span className={styles.panelTitle}>
+              Riding Rhythm / 骑行节律
+            </span>
             <span className={styles.panelHint}>{periodTotal} Rides</span>
           </div>
           {periodTotal ? (
             <div className={styles.periodBar} role="group" aria-label="时段分布">
               {periods.map((p, i) => (
-                <span
-                  key={p.label}
+                <button
+                  key={p.title}
+                  type="button"
                   className={`${styles.periodSeg} ${
                     i === 0 ? styles.segFirst : ''
                   } ${i === periods.length - 1 ? styles.segLast : ''}`}
@@ -280,14 +310,21 @@ const JourneyStats = ({ changeCity }: IJourneyStatsProps) => {
                     flexGrow: p.count,
                     background: `color-mix(in srgb, var(--accent) ${p.alpha}%, transparent)`,
                   }}
-                  title={`${p.label} · ${p.count} Rides`}
+                  onClick={() => changeTitle(p.title)}
+                  title={`${p.label}骑行 · ${p.count} Rides`}
+                  aria-label={`${p.label} ${p.count} 次`}
                 />
               ))}
             </div>
           ) : null}
           <div className={styles.periodLegend}>
             {periods.map((p) => (
-              <span key={p.label} className={styles.legendItem}>
+              <button
+                key={p.title}
+                type="button"
+                className={styles.legendItem}
+                onClick={() => changeTitle(p.title)}
+              >
                 <span
                   className={styles.legendDot}
                   style={{
@@ -296,78 +333,149 @@ const JourneyStats = ({ changeCity }: IJourneyStatsProps) => {
                 />
                 <span className={styles.legendName}>{p.label}</span>
                 <span className={styles.legendCount}>{p.count}</span>
-              </span>
+              </button>
             ))}
           </div>
 
-          <div className={styles.races}>
-            {milestones.map((m) => (
-              <span key={m.label} className={styles.racePill}>
-                <span className={styles.raceLabel}>{m.label}</span>
-                <span className={styles.raceCount}>{m.count} Rides</span>
-              </span>
-            ))}
-          </div>
+          {races.length ? (
+            <div className={styles.races}>
+              {races.map((r) => (
+                <button
+                  key={r.title}
+                  type="button"
+                  className={styles.racePill}
+                  onClick={() => changeTitle(r.title)}
+                >
+                  <span className={styles.raceLabel}>{r.label}</span>
+                  <span className={styles.raceCount}>{r.count} Rides</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
 
           <div className={styles.extraKpis}>
             {avgSpeed ? (
               <div className={styles.kpi}>
-                <span className={styles.kpiValue}>
-                  {(avgSpeed * 3.6).toFixed(1)} km/h
+                <span className={styles.kpiValue}>{avgSpeed} km/h</span>
+                <span className={styles.kpiLabel}>
+                  Average Speed / 平均速度
                 </span>
-                <span className={styles.kpiLabel}>Avg Speed</span>
               </div>
             ) : null}
             {streak ? (
               <div className={styles.kpi}>
                 <span className={styles.kpiValue}>{streak} day</span>
-                <span className={styles.kpiLabel}>Streak</span>
+                <span className={styles.kpiLabel}>
+                  Longest Streak / 最长连续骑行
+                </span>
               </div>
             ) : null}
             {avgHR ? (
               <div className={styles.kpi}>
                 <span className={styles.kpiValue}>{avgHR}</span>
-                <span className={styles.kpiLabel}>Avg Heart Rate</span>
+                <span className={styles.kpiLabel}>
+                  Avg Heart Rate / 平均心率
+                </span>
               </div>
             ) : null}
           </div>
         </div>
       </div>
 
-      {records.pbRows.length ? (
+      {records.length ? (
         <div className={styles.records}>
           <div className={styles.recordCard}>
             <div className={styles.panelHead}>
-              <span className={styles.panelTitle}>个人最佳</span>
-              <span className={styles.panelHint}>历史之最</span>
+              <span className={styles.panelTitle}>
+                Cycling Records / 骑行纪录
+              </span>
+              <span className={styles.panelHint}>
+                真实历史活动 · 点击纪录查看活动
+              </span>
             </div>
             <div className={styles.recordList}>
-              {records.pbRows.map((r) => (
-                <div key={r.label} className={styles.recordRow}>
+              {records.map((r) => (
+                <button
+                  key={r.label}
+                  type="button"
+                  className={styles.recordRowButton}
+                  onClick={() =>
+                    setSelectedRecord((current) =>
+                      current?.run.run_id === r.run.run_id &&
+                      current?.label === r.label
+                        ? null
+                        : r
+                    )
+                  }
+                  aria-pressed={
+                    selectedRecord?.label === r.label &&
+                    selectedRecord?.run.run_id === r.run.run_id
+                  }
+                >
                   <span className={styles.recordLabel}>{r.label}</span>
                   <span className={styles.recordValue}>{r.value}</span>
                   <span className={styles.recordDate}>{r.date}</span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
-          {records.prRows.length ? (
-            <div className={styles.recordCard}>
-              <div className={styles.panelHead}>
-                <span className={styles.panelTitle}>最快时间</span>
-                <span className={styles.panelHint}>按平均速度推算</span>
-              </div>
-              <div className={styles.recordList}>
-                {records.prRows.map((r) => (
-                  <div key={r.label} className={styles.recordRow}>
-                    <span className={styles.recordLabel}>{r.label}</span>
-                    <span className={styles.recordValue}>{r.value}</span>
-                    <span className={styles.recordDate}>{r.date}</span>
-                  </div>
-                ))}
-              </div>
+        </div>
+      ) : null}
+
+      {selectedRecord ? (
+        <div className={styles.detailCard}>
+          <div className={styles.detailHead}>
+            <span className={styles.detailTitle}>{selectedRecord.label}</span>
+            <button
+              type="button"
+              className={styles.detailClose}
+              onClick={() => setSelectedRecord(null)}
+            >
+              返回列表
+            </button>
+          </div>
+          <p className={styles.detailValue}>{selectedRecord.value}</p>
+          <dl className={styles.detailGrid}>
+            <div>
+              <dt>日期 / Date</dt>
+              <dd>{selectedRecord.run.start_date_local.slice(0, 10)}</dd>
             </div>
-          ) : null}
+            <div>
+              <dt>距离 / Distance</dt>
+              <dd>{(selectedRecord.run.distance / 1000).toFixed(2)} km</dd>
+            </div>
+            <div>
+              <dt>时长 / Duration</dt>
+              <dd>{fmtDuration(convertMovingTime2Sec(selectedRecord.run.moving_time))}</dd>
+            </div>
+            <div>
+              <dt>速度 / Speed</dt>
+              <dd>{(selectedRecord.run.average_speed * 3.6).toFixed(1)} km/h</dd>
+            </div>
+            <div>
+              <dt>爬升 / Elevation</dt>
+              <dd>{Math.round(selectedRecord.run.elevation_gain || 0)} m</dd>
+            </div>
+            <div>
+              <dt>心率 / Heart Rate</dt>
+              <dd>
+                {selectedRecord.run.average_heartrate
+                  ? `${Math.round(selectedRecord.run.average_heartrate)} bpm`
+                  : '—'}
+              </dd>
+            </div>
+            <div>
+              <dt>类型 / Type</dt>
+              <dd>{selectedRecord.run.subtype || selectedRecord.run.type}</dd>
+            </div>
+          </dl>
+          <button
+            type="button"
+            className={styles.detailMapButton}
+            onClick={() => onViewRun(selectedRecord.run.run_id)}
+          >
+            在地图中查看轨迹 / View on map
+          </button>
         </div>
       ) : null}
     </section>

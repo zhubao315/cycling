@@ -80,11 +80,9 @@ const formatRunTime = (moving_time: string): string => {
 
 // for scroll to the map
 const scrollToMap = () => {
-  const el = document.querySelector('.fl.w-100.w-70-l');
-  const rect = el?.getBoundingClientRect();
-  if (rect) {
-    window.scroll(rect.left + window.scrollX, rect.top + window.scrollY);
-  }
+  const el = document.getElementById('explore');
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 const extractCities = (str: string): string[] => {
@@ -218,26 +216,26 @@ const pathForRun = (run: Activity): Coordinate[] => {
 
 const geoJsonForRuns = (runs: Activity[]): FeatureCollection<LineString> => ({
   type: 'FeatureCollection',
-  features: runs.map((run) => {
+  features: runs.flatMap((run) => {
     const points = pathForRun(run);
-
-    return {
-      type: 'Feature',
-      properties: {
-        color: MAP_LINE_COLOR,
+    if (points.length < 2) return [];
+    return [
+      {
+        type: 'Feature' as const,
+        properties: { color: MAP_LINE_COLOR },
+        geometry: { type: 'LineString' as const, coordinates: points },
       },
-      geometry: {
-        type: 'LineString',
-        coordinates: points,
-      },
-    };
+    ];
   }),
 });
 
-const geoJsonForMap = (): FeatureCollection<RPGeometry> => ({
-  type: 'FeatureCollection',
-  features: worldGeoJson.features.concat(chinaGeojson.features),
-})
+const geoJsonForMap = (): FeatureCollection<RPGeometry> => {
+  const world = worldGeoJson as unknown as FeatureCollection<RPGeometry>;
+  return {
+    type: 'FeatureCollection',
+    features: world.features.concat(chinaGeojson.features),
+  };
+};
 
 const getActivitySport = (act: Activity): string => {
   if (act.type === 'Run') {

@@ -1,21 +1,21 @@
 import { locationForRun, titleForRun } from '@/utils/utils';
-import activities from '@/static/activities.json';
+import activitiesJson from '@/static/activities.json';
+import type { Activity } from '@/utils/utils';
 
 const MIN_DISTANCE_M = 3000;
 
-const useActivities = () => {
+const activities = (activitiesJson as Activity[]).filter(
+  (run) => /^cycling$/i.test(run.type || '') && (run.distance || 0) >= MIN_DISTANCE_M
+);
+
+const build = () => {
   const cities: Record<string, number> = {};
   const runPeriod: Record<string, number> = {};
   const provinces: Set<string> = new Set();
   const countries: Set<string> = new Set();
-  let years: Set<string> = new Set();
-  let thisYear = '';
+  const years: Set<string> = new Set();
 
-  const visibleActivities = activities.filter(
-    (run) => (run.distance || 0) >= MIN_DISTANCE_M
-  );
-
-  visibleActivities.forEach((run) => {
+  activities.forEach((run) => {
     const location = locationForRun(run);
 
     const periodName = titleForRun(run);
@@ -26,21 +26,19 @@ const useActivities = () => {
     }
 
     const { city, province, country } = location;
-    // drop only one char city
     if (city.length > 1) {
       cities[city] = cities[city] ? cities[city] + run.distance : run.distance;
     }
     if (province) provinces.add(province);
     if (country) countries.add(country);
-    const year = run.start_date_local.slice(0, 4);
-    years.add(year);
+    years.add(run.start_date_local.slice(0, 4));
   });
 
-  let yearsArray = [...years].sort().reverse();
-  if (years) [thisYear] = yearsArray; // set current year as first one of years array
+  const yearsArray = [...years].sort().reverse();
+  const thisYear = yearsArray[0] ?? '';
 
   return {
-    activities: visibleActivities,
+    activities,
     years: yearsArray,
     countries: [...countries],
     provinces: [...provinces],
@@ -49,5 +47,9 @@ const useActivities = () => {
     thisYear,
   };
 };
+
+const cache = build();
+
+const useActivities = () => cache;
 
 export default useActivities;

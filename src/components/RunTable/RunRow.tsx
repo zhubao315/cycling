@@ -1,68 +1,65 @@
+import type { KeyboardEvent } from 'react';
 import {
   formatPace,
-  formatSpeed,
   titleForRun,
   formatRunTime,
   Activity,
-  RunIds,
 } from '@/utils/utils';
-import { SITE_SPORT } from '@/utils/const';
 import { sceneHashOf } from '@/vert/scenes';
 import styles from './style.module.css';
 
 interface IRunRowProperties {
-  elementIndex: number;
-  locateActivity: (_runIds: RunIds) => void;
   run: Activity;
-  runIndex: number;
-  setRunIndex: (_ndex: number) => void;
+  selected: boolean;
+  onSelect: (_runId: number | null) => void;
 }
 
-const RunRow = ({
-  elementIndex,
-  locateActivity,
-  run,
-  runIndex,
-  setRunIndex,
-}: IRunRowProperties) => {
+const RunRow = ({ run, selected, onSelect }: IRunRowProperties) => {
   const distance = (run.distance / 1000.0).toFixed(2);
-  const paceParts = run.average_speed
-    ? SITE_SPORT === 'cycling'
-      ? formatSpeed(run.average_speed)
-      : formatPace(run.average_speed)
+  const pace = run.average_speed > 0 ? formatPace(run.average_speed) : '—';
+  const heartRate = run.average_heartrate
+    ? Math.round(run.average_heartrate)
     : null;
-  const heartRate = run.average_heartrate;
   const runTime = formatRunTime(run.moving_time);
-  const handleClick = () => {
-    if (runIndex === elementIndex) {
-      setRunIndex(-1);
-      locateActivity([]);
-      return;
+  const handleClick = () => onSelect(selected ? null : run.run_id);
+  const handleKeyDown = (event: KeyboardEvent<HTMLTableRowElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleClick();
     }
-    setRunIndex(elementIndex);
-    locateActivity([run.run_id]);
   };
 
   return (
     <tr
-      className={`${styles.runRow} ${runIndex === elementIndex ? styles.selected : ''}`}
-      key={run.start_date_local}
+      className={`${styles.runRow} ${selected ? styles.selected : ''}`}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      aria-selected={selected}
     >
       <td>
         {titleForRun(run)}
         {sceneHashOf(run.run_id) ? (
-          <sup className="ml-1 rounded bg-orange-100 px-1 text-[10px] font-medium text-orange-700">
+          <sup
+            title="查看 3D 地形"
+            className={styles.badge3d}
+          >
             3D
           </sup>
         ) : null}
       </td>
       <td>{distance}</td>
-      {paceParts && <td>{paceParts}</td>}
-      <td>{heartRate && heartRate.toFixed(0)}</td>
-      <td>{run.elevation_gain ? Math.round(run.elevation_gain) : '-'}</td>
+      <td>{pace}</td>
+      <td title={heartRate === null ? '无心率数据' : undefined}>
+        {heartRate ?? '—'}
+      </td>
       <td>{runTime}</td>
-      <td className={styles.runDate}>{run.start_date_local}</td>
+      <td className={styles.runDate}>
+        {run.start_date_local.slice(0, 10)}
+        <span className={styles.runClock}>
+          {run.start_date_local.slice(11, 16)}
+        </span>
+      </td>
     </tr>
   );
 };
