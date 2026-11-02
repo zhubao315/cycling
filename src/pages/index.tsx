@@ -24,6 +24,7 @@ import {
   buildCalendar,
   buildDataset,
   buildYearSeries,
+  availableYears,
   computeTotals,
   filterRunsByPeriod,
   filterRunsByScope,
@@ -45,7 +46,10 @@ const Index = () => {
   const { activities } = useActivities();
   const { runs } = useMemo(() => buildDataset(activities), [activities]);
 
-  const [selectedYear, setSelectedYear] = useState('all');
+  const [selectedYear, setSelectedYear] = useState(() => {
+    const years = availableYears(runs);
+    return years.length ? String(years[years.length - 1]) : 'all';
+  });
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedMetric, setSelectedMetric] =
