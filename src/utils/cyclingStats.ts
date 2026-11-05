@@ -8,7 +8,7 @@ import {
  * Single source of truth for every number on the dashboard.
  *
  * Rules:
- * - only `Run` records enter the running totals (cycling/hiking never mix in);
+ * - only `cycling` records of at least 3 km enter the riding totals (running/hiking never mix in);
  * - records are de-duplicated by run_id and invalid rows are dropped, never zero-filled;
  * - a missing value is `null` (rendered as "—"), not 0;
  * - pace is always the weighted figure: total seconds / total kilometres.
@@ -36,6 +36,8 @@ export interface Totals {
   distanceKm: number;
   seconds: number;
   elevationM: number;
+  /** Records whose device actually reported a climb value; the sum covers only these. */
+  elevationCount: number;
   paceSecondsPerKm: number | null;
   hrCount: number;
   hrAverage: number | null;
@@ -285,6 +287,7 @@ export const computeTotals = (runs: readonly RunRecord[]): Totals => {
   let distanceKm = 0;
   let seconds = 0;
   let elevationM = 0;
+  let elevationCount = 0;
   let hrCount = 0;
   let hrSum = 0;
   let firstDate: string | null = null;
@@ -294,6 +297,9 @@ export const computeTotals = (runs: readonly RunRecord[]): Totals => {
     distanceKm += run.distanceKm;
     seconds += run.seconds;
     elevationM += run.elevation_gain || 0;
+    if (run.elevation_gain) {
+      elevationCount += 1;
+    }
     if (run.average_heartrate) {
       hrCount += 1;
       hrSum += run.average_heartrate;
@@ -310,6 +316,7 @@ export const computeTotals = (runs: readonly RunRecord[]): Totals => {
     distanceKm,
     seconds,
     elevationM,
+    elevationCount,
     paceSecondsPerKm:
       runs.length && distanceKm > 0 && seconds > 0
         ? seconds / distanceKm

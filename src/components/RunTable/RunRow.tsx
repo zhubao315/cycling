@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from 'react';
 import {
-  formatPace,
+  formatSpeed,
   titleForRun,
   formatRunTime,
   Activity,
@@ -16,7 +16,8 @@ interface IRunRowProperties {
 
 const RunRow = ({ run, selected, onSelect }: IRunRowProperties) => {
   const distance = (run.distance / 1000.0).toFixed(2);
-  const pace = run.average_speed > 0 ? formatPace(run.average_speed) : '—';
+  const speed = run.average_speed > 0 ? `${formatSpeed(run.average_speed)} km/h` : '—';
+  const climb = run.elevation_gain ? Math.round(run.elevation_gain) : null;
   const heartRate = run.average_heartrate
     ? Math.round(run.average_heartrate)
     : null;
@@ -49,7 +50,8 @@ const RunRow = ({ run, selected, onSelect }: IRunRowProperties) => {
         ) : null}
       </td>
       <td>{distance}</td>
-      <td>{pace}</td>
+      <td>{speed}</td>
+      <td title={climb === null ? '无爬升数据' : undefined}>{climb ?? '—'}</td>
       <td title={heartRate === null ? '无心率数据' : undefined}>
         {heartRate ?? '—'}
       </td>

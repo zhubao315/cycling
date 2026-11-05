@@ -52,9 +52,9 @@ const CoreMetrics = ({ totals, scope, runs = [] }: ICoreMetricsProps) => {
       value: formatNumber(totals.elevationM),
       unit: 'm',
       sub: hasRuns
-        ? `平均每次 ${formatNumber(
-            totals.count ? Math.round(totals.elevationM / totals.count) : 0
-          )} m`
+        ? `仅 ${formatNumber(totals.elevationCount)} / ${formatNumber(
+            totals.count
+          )} 条上报爬升`
         : '当前范围没有记录',
     },
     {

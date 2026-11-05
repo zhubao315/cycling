@@ -202,13 +202,13 @@
     padding: 0.48rem 0.3rem;
   }
 
-  /* keep activity, distance and date; pace / bpm / time stay on desktop */
-  .runTable th:nth-child(3),
-  .runTable td:nth-child(3),
+  /* keep activity, distance, speed and date; climb / bpm / time stay on desktop */
   .runTable th:nth-child(4),
   .runTable td:nth-child(4),
   .runTable th:nth-child(5),
-  .runTable td:nth-child(5) {
+  .runTable td:nth-child(5),
+  .runTable th:nth-child(6),
+  .runTable td:nth-child(6) {
     display: none;
   }
 

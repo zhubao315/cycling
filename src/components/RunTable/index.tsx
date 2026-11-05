@@ -13,7 +13,7 @@ interface IRunTableProperties {
   onClearScope: () => void;
 }
 
-type SortKey = 'date' | 'distance' | 'pace' | 'heartrate' | 'time';
+type SortKey = 'date' | 'distance' | 'speed' | 'climb' | 'heartrate' | 'time';
 type SortDirection = 'asc' | 'desc';
 
 interface ISortState {
@@ -37,7 +37,8 @@ const COLUMNS: Array<{
   initialDirection: SortDirection;
 }> = [
   { key: 'distance', label: 'KM', initialDirection: 'desc' },
-  { key: 'pace', label: 'Pace', initialDirection: 'asc' },
+  { key: 'speed', label: 'Speed', initialDirection: 'desc' },
+  { key: 'climb', label: 'Climb', initialDirection: 'desc' },
   { key: 'heartrate', label: 'BPM', initialDirection: 'desc' },
   { key: 'time', label: 'Time', initialDirection: 'desc' },
   { key: 'date', label: 'Date', initialDirection: 'desc' },
@@ -49,8 +50,10 @@ const sortValue = (run: Activity, key: SortKey): number | null => {
       return new Date(run.start_date_local.replace(' ', 'T')).getTime();
     case 'distance':
       return run.distance;
-    case 'pace':
-      return run.average_speed > 0 ? 1000 / run.average_speed : null;
+    case 'speed':
+      return run.average_speed > 0 ? run.average_speed : null;
+    case 'climb':
+      return run.elevation_gain || null;
     case 'heartrate':
       return run.average_heartrate ?? null;
     case 'time':
@@ -118,7 +121,7 @@ const RunTable = ({
   if (!runs.length) {
     return (
       <div className={styles.empty}>
-        <p>当前筛选没有跑步记录。</p>
+        <p>当前筛选没有骑行记录。</p>
         <button type="button" onClick={onClearScope}>
           清除筛选，回到全部历史
         </button>
@@ -130,7 +133,7 @@ const RunTable = ({
     <div className={styles.tableContainer}>
       <p className={styles.hint}>
         <span className={styles.hintBadge}>3D</span>
-        标记的跑步可查看地形；点击行在地图上定位
+        标记的骑行可查看地形；点击行在地图上定位
       </p>
 
       <table className={styles.runTable} cellSpacing="0" cellPadding="0">
