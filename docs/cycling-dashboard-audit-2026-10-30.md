@@ -247,6 +247,13 @@ src/utils/utils.ts                             # geoJson 过滤 / scroll 联动
 
 Playwright（1440×900 / 390×844 / 320×568，本地 `dist` 直服）三视口均为：pageerror 0、非库告警的 console error 0、`scrollWidth - clientWidth` 0，首屏只请求 `tracks-2026.json`（断言 ≤4 个分片），载入提示最终消失；点 2019 后追加请求 `tracks-2019.json` 并同样落定；切到全部历史时 14 个分片全部到位后提示消失。标题仍为「Total 全部历史 · 5,765 次 · 45,207.8 km」，与拆分前一致——统计数字没有任何变化。
 
+部署后对线上 `zhubao315.github.io/cycling` 重跑同一组断言（Actions run `42154768967`，deployment `7591305901` success）：
+
+- 首屏 `performance` 实测**传输 1.84 MB**（Pages 已压缩），构成为 vendors 444 kB + index 92 kB + 元数据 401 kB + 当年分片 675 kB；拆分前同一关键路径上的 activities 一项就是 5.78 MB（gzip 口径），即**首屏压缩传输量约 5.3 MB → 1.84 MB**，其中「约 5.3 MB」是按构建产物 gzip 大小相加、非同一实测口径；
+- 线上 `activities-bfb9f969.js` 3.36 MB，`summary_polyline` 出现 **0** 次、`has_track` 与 `run_id` 各 **7,917** 次——记录一条不少、几何一条不落地全部移出；
+- `data/tracks/tracks-2026.json` 2.72 MB 与 `tracks-2013.json` 0.27 MB 均 200，不存在的 `tracks-1999.json` 返回 404（分片名不可猜测，也不会有空文件）；
+- 三视口 pageerror 0、console error 0（390／320 全清）、横向溢出 0，2019 与全部历史两个视图的提示都最终消失。1440 首轮出现过一次 `net::ERR_NETWORK_CHANGED` 与随之而来的 `TypeError: Failed to fetch`，属容器网络抖动：单独打开 `requestfailed` 监听重跑两次均为 0 失败请求、0 页面错误，且那次分片只请求了 `tracks-2026.json` 并正常落定，不是本页的取数逻辑出错。
+
 ### 12.4 完整性：一条线都不能少
 
 对构建产物逐条核对：元数据含全部 **7,917** 条记录（cycling 类型即全量，无其他类型），分片含 **7,917** 条几何，与源文件中「非空 `summary_polyline`」的记录数完全相等，且连接后 polyline **逐条一致**。本库不存在「无 GPS 线」的骑行记录，故 `has_track` 对每条为真；「(No map data for this run)」这条文案对现数据不再触发，逻辑保留以防未来出现无轨迹记录。
