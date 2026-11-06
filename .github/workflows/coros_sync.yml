@@ -23,6 +23,8 @@ on:
       - run_page/update_readme_stats.py
       - requirements.txt
       - src/**
+      - plugins/**
+      - vite.config.ts
       - assets/**
       - README.md
       - index.html

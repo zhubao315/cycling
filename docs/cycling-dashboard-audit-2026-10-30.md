@@ -149,7 +149,7 @@ src/utils/utils.ts                             # geoJson 过滤 / scroll 联动
 | 项目 | 结果 |
 |------|------|
 | `tsc --noEmit` | ✅ 通过 |
-| `PATH_PREFIX=/cycling pnpm build` | ✅ 通过（14.8s / 22.6s，activities 懒加载 chunk 18.7MB gzip 5.7MB） |
+| `PATH_PREFIX=/cycling pnpm build` | ✅ 通过（14.8s / 22.6s；当时 activities 是一个 18.7MB（gzip 5.7MB）的单独 chunk 且随首屏下载 —— 2026-11-06 已拆分，见「十二」。表中所称「懒加载」仅指 manualChunks 单独命名，并非 dynamic import，实际并未延迟） |
 | 桌面 1440px | ✅ 无横向溢出，六模块顺序正确，无 pageerror |
 | 移动 390px / 320px | ✅ `scrollWidth - clientWidth = 0`，无横向溢出，Profile 上下分区正常 |
 | 控制台 | ✅ 无页面错误（仅 MapLibre null-value 与 WebGL 驱动警告，非页面错误） |
@@ -216,3 +216,45 @@ src/utils/utils.ts                             # geoJson 过滤 / scroll 联动
 ### 11.5 在 sync 中的位置
 
 `Resolve locations from tracks` 排在全部数据步骤之后、`Check dataset integrity`（`run_page/check_data_integrity_rh.py --sport cycling`）与 `Commit new runs` 之前。集成检查比对 JSON 与 `data.db` 的记录集合、里程、起始时间、总里程以及地点来源计数，任何不一致即拒绝提交。派生地点因此由 CI 从**线上数据**重新生成，本地跑出来的 JSON 不进仓库。
+
+---
+
+## 十二、轨迹与记录分离：首屏不再下载整份轨迹（2026-11-06 追加）
+
+### 12.1 问题
+
+`src/static/activities.json` 一份 20.0 MB 的文件里，7,917 条记录只有 `summary_polyline` 一项就占了绝大部分体积。它被 `useActivities` 静态引入，`manualChunks` 只是把它单独命名（并非 dynamic import），因此每次访问、每个视口都要先下载完这 18.7 MB（gzip 5.78 MB）才会出现第一个数字——而统计、表格、日历、核心指标从来不画线，只有地图需要几何。
+
+### 12.2 机制：构建期拆分，仓库仍只有一份数据
+
+`plugins/splitActivities.ts`（enforce: pre）在 `resolveId` 里认领 `src/static/activities.json`：
+
+- **记录**去掉 `summary_polyline`，其余字段原样，并对手上有几何的记录加一个 `has_track: true`，作为虚拟模块 `virtual:activities-meta` 同步求值——所有统计口径因此完全不变；
+- **几何**按 `start_date_local` 年份归入 `data/tracks/tracks-<年份>.json`（`generateBundle` 以 asset 形式产出，共 14 个分片）；
+- `vite dev` 由同一插件的中间件按需提供同样的分片（实测 `?import` 模块 3.6 MB，原始文件 19.5 MB；未知年份 404），`handleHotUpdate` 在 JSON 变化时使元数据模块失效。
+
+分片与元数据都是**构建产物，一个字节都不进仓库**：`activities.json` 依旧是唯一数据源，sync 流程、`data.db`、完整性检查都不用改，也不会出现第二份需要保持同步的副本。
+
+运行侧 `src/utils/tracks.ts`：按当前视图需要的年份抓一次、会话内缓存、`trackFor(run_id)` 供 `pathForRun` 解码；`utils.ts` 改为 `run.summary_polyline || trackFor(run.run_id)`，dev 与 prod 两条路都能画。地图标题在几何未齐时显示「轨迹加载中 X/Y」，某年抓取失败则显示「N 个年份的轨迹加载失败」——**加载失败要说出来，而不是悄悄少画几条线冒充全部数据**。
+
+### 12.3 体积与行为（同一份线上数据、同一次构建实测）
+
+| 项目 | 拆分前 | 拆分后 |
+| --- | ---: | ---: |
+| 首屏必需 | activities chunk 18.7 MB / gzip 5.78 MB | 元数据 3.21 MB / gzip 401 kB |
+| 首屏几何 | 全部 7,917 条 | 仅当年 `tracks-2026.json` 2.72 MB / gzip 675 kB |
+| 全部历史几何 | 同上，一次下载 | 14 个分片共 15.99 MB / gzip 5.20 MB，按需累计 |
+
+Playwright（1440×900 / 390×844 / 320×568，本地 `dist` 直服）三视口均为：pageerror 0、非库告警的 console error 0、`scrollWidth - clientWidth` 0，首屏只请求 `tracks-2026.json`（断言 ≤4 个分片），载入提示最终消失；点 2019 后追加请求 `tracks-2019.json` 并同样落定；切到全部历史时 14 个分片全部到位后提示消失。标题仍为「Total 全部历史 · 5,765 次 · 45,207.8 km」，与拆分前一致——统计数字没有任何变化。
+
+### 12.4 完整性：一条线都不能少
+
+对构建产物逐条核对：元数据含全部 **7,917** 条记录（cycling 类型即全量，无其他类型），分片含 **7,917** 条几何，与源文件中「非空 `summary_polyline`」的记录数完全相等，且连接后 polyline **逐条一致**。本库不存在「无 GPS 线」的骑行记录，故 `has_track` 对每条为真；「(No map data for this run)」这条文案对现数据不再触发，逻辑保留以防未来出现无轨迹记录。
+
+### 12.5 19 位 `run_id`：与「十三」同一现象，这里为何无害
+
+7,917 条里有 **3,121** 条 `run_id` 大于 2^53，`JSON.parse → stringify` 会把它们写成最短往返小数（Node 实测 `9223370414951006207` → `9223370414951006000`），分片文件里的文本因此与源文件不同——这正是 hiking「十三」记录的那个 IEEE-754 缺陷。它在这里不改变任何结果，原因是两侧都以**同一个 double** 进入 JS：`polylines` 按数字取键，源记录与分片记录是同一个数值。实测：0 例碰撞（7,917 个精确 id 与 7,917 个 double 一一对应），7,917/7,917 可连接，polyline 一致；2019 视图（≥3 km 共 279 条，其中 255 条是 19 位 id）提示消失即是端到端证明。分片是构建产物，从不提交，也不与 `data.db`、`scenes.json` 连接，因此仓库里的 id 文本一字未动；hiking 需要修复的是**已提交的 JSON**，两者不是同一个问题。
+
+### 12.6 为什么只拆 cycling
+
+同一文件在 running 为 4.26 MB、hiking 为 1.10 MB，首屏代价远低于这里拆分前后的差值；拆分要引入分片与运行时取键，收益不抵复杂度，因此暂不套用。若某一站后续增长到同样量级，插件与 `tracks.ts` 是可直接搬用的（`bucketOf`/分片名不含站点假设）。

@@ -35,6 +35,11 @@ import {
   type MetricKey,
   type RunScope,
 } from '@/utils/cyclingStats';
+import {
+  ensureTracks,
+  subscribeTracks,
+  trackProgress,
+} from '@/utils/tracks';
 import styles from '@/components/CyclingDashboard/style.module.css';
 
 type QuickFilter = {
@@ -99,7 +104,26 @@ const Index = () => {
     [selectedRun, scopeRuns]
   );
 
-  const fullGeoData = useMemo(() => geoJsonForRuns(mapRuns), [mapRuns]);
+  // The bundle carries no geometry: ask for the years this view draws, then
+  // rebuild the lines when a batch lands.
+  const [tracksToken, setTracksToken] = useState(0);
+  useEffect(
+    () => subscribeTracks(() => setTracksToken((token) => token + 1)),
+    []
+  );
+  useEffect(() => {
+    ensureTracks(mapRuns);
+  }, [mapRuns]);
+
+  const tracks = useMemo(
+    () => trackProgress(mapRuns),
+    [mapRuns, tracksToken]
+  );
+
+  const fullGeoData = useMemo(
+    () => geoJsonForRuns(mapRuns),
+    [mapRuns, tracksToken]
+  );
   const [geoData, setGeoData] = useState<FeatureCollection<LineString>>(
     () => fullGeoData
   );
@@ -220,13 +244,21 @@ const Index = () => {
   }, [selectedRun?.run_id]);
 
   const mapTitle = useMemo(() => {
-    if (selectedRun) return titleForShow(selectedRun);
+    // While a year's geometry is still on its way the map would otherwise show
+    // fewer lines than the scope contains, so say so in the caption.
+    const trackNote =
+      tracks.wanted === 0 || tracks.present === tracks.wanted
+        ? ''
+        : tracks.failedBuckets.length > 0
+          ? ` · ${formatNumber(tracks.failedBuckets.length)} 个年份的轨迹加载失败`
+          : ` · 轨迹加载中 ${formatNumber(tracks.present)}/${formatNumber(tracks.wanted)}`;
+    if (selectedRun) return `${titleForShow(selectedRun)}${trackNote}`;
     const label = filterNote ?? scopeLabel(scope);
     if (!scopeRuns.length) return `${label} · 无记录`;
     return `${label} · ${formatNumber(scopeRuns.length)} 次 · ${formatDistanceKm(
       scopeTotals.distanceKm
-    )} km`;
-  }, [selectedRun, filterNote, scope, scopeRuns, scopeTotals.distanceKm]);
+    )} km${trackNote}`;
+  }, [selectedRun, filterNote, scope, scopeRuns, scopeTotals.distanceKm, tracks]);
 
   const yearSeries = useMemo(() => buildYearSeries(baseRuns), [baseRuns]);
   const latestYear = yearSeries.length
