@@ -91,6 +91,10 @@ export interface GeoSummary {
   provinces: string[];
   cities: string[];
   homeProvince: string | null;
+  /** Records the watch placed itself. */
+  devicePlaced: number;
+  /** Records placed from the GPS track, with no device location to keep. */
+  trackPlaced: number;
 }
 
 export const METRICS: Array<{
@@ -536,6 +540,8 @@ export const computeGeo = (runs: readonly RunRecord[]): GeoSummary => {
   const provinces = new Map<string, number>();
   const countries = new Set<string>();
   const cities = new Set<string>();
+  let devicePlaced = 0;
+  let trackPlaced = 0;
 
   for (const run of runs) {
     const location = locationForRun(run);
@@ -547,6 +553,11 @@ export const computeGeo = (runs: readonly RunRecord[]): GeoSummary => {
       );
     }
     if (location.city.length > 1) cities.add(location.city);
+    if (run.location_country) {
+      devicePlaced += 1;
+    } else if (run.location_resolved) {
+      trackPlaced += 1;
+    }
   }
 
   const provinceRanking = [...provinces.entries()].sort(
@@ -564,5 +575,7 @@ export const computeGeo = (runs: readonly RunRecord[]): GeoSummary => {
     provinces: provinceRanking.map(([name]) => name),
     cities: [...cities],
     homeProvince: homeProvince || null,
+    devicePlaced,
+    trackPlaced,
   };
 };
