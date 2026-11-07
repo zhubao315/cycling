@@ -87,9 +87,14 @@ const JourneyStats = ({ changeCity, changePeriod, onViewRun }: IJourneyStatsProp
         ? b
         : a
     );
-    const highestElev = validRuns.reduce((a, b) =>
-      (b.elevation_gain || 0) > (a.elevation_gain || 0) ? b : a
+    const elevRuns = validRuns.filter(
+      (run) => typeof run.elevation_gain === 'number' && run.elevation_gain > 0
     );
+    const highestElev = elevRuns.length
+      ? elevRuns.reduce((a, b) =>
+          (b.elevation_gain as number) > (a.elevation_gain as number) ? b : a
+        )
+      : null;
     const fastest = validRuns.reduce((a, b) =>
       b.average_speed > a.average_speed ? b : a
     );
@@ -127,12 +132,16 @@ const JourneyStats = ({ changeCity, changePeriod, onViewRun }: IJourneyStatsProp
         date: dateOf(longest),
         run: longest,
       },
-      {
-        label: '最大爬升 / Greatest Elevation',
-        value: `${Math.round(highestElev.elevation_gain || 0)} m`,
-        date: dateOf(highestElev),
-        run: highestElev,
-      },
+      ...(highestElev
+        ? [
+            {
+              label: '最大爬升 / Greatest Elevation',
+              value: `${Math.round(highestElev.elevation_gain as number)} m`,
+              date: dateOf(highestElev),
+              run: highestElev,
+            },
+          ]
+        : []),
       {
         label: '最高速度 / Highest Average Speed',
         value: `${(fastest.average_speed * 3.6).toFixed(1)} km/h`,
@@ -377,6 +386,10 @@ const JourneyStats = ({ changeCity, changePeriod, onViewRun }: IJourneyStatsProp
                 </button>
               ))}
             </div>
+            <p className={styles.recordNote}>
+              功率 / FTP：原始 activities.json 不含功率字段，因此不展示功率曲线、NP 或 FTP 估算；
+              缺失的爬升与心率同样保持为空，不按 0 计入。
+            </p>
           </div>
         </div>
       ) : null}
@@ -413,7 +426,11 @@ const JourneyStats = ({ changeCity, changePeriod, onViewRun }: IJourneyStatsProp
             </div>
             <div>
               <dt>爬升 / Elevation</dt>
-              <dd>{Math.round(selectedRecord.run.elevation_gain || 0)} m</dd>
+              <dd>
+                {typeof selectedRecord.run.elevation_gain === 'number'
+                  ? `${Math.round(selectedRecord.run.elevation_gain)} m`
+                  : '设备未记录'}
+              </dd>
             </div>
             <div>
               <dt>心率 / Heart Rate</dt>

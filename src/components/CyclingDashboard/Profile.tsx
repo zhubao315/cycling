@@ -27,7 +27,7 @@ const Profile = ({ runs }: IProfileProps) => {
 
   return (
     <section className={styles.profile} aria-labelledby="profile-title">
-      <SectionHeader index="01" kicker="CYCLING PROFILE" title="个人骑行档案" />
+      <SectionHeader index="01" kicker="CYCLING PERFORMANCE & CAREER" title="个人骑行档案" />
       <div className={styles.profileIdentity}>
         <img className={styles.avatar} src={meta.logo} alt="" />
         <div className={styles.profileText}>

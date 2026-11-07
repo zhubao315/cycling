@@ -404,6 +404,13 @@ button.geoCell:hover {
   color: var(--muted);
 }
 
+.recordNote {
+  margin: 0.7rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.7;
+}
+
 @media (max-width: 960px) {
   .body {
     grid-template-columns: 1fr;
