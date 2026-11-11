@@ -40,6 +40,7 @@ import {
   subscribeTracks,
   trackProgress,
 } from '@/utils/tracks';
+import { readUrlState, writeUrlState } from '@/utils/urlState';
 import styles from '@/components/CyclingDashboard/style.module.css';
 
 type QuickFilter = {
@@ -51,15 +52,40 @@ const Index = () => {
   const { activities } = useActivities();
   const { runs } = useMemo(() => buildDataset(activities), [activities]);
 
+  // A link may address a day, a year or one activity: read it before the
+  // first paint so the page opens on what the link talks about.
+  const urlState = useMemo(() => readUrlState(), []);
+  const deepLinkDate = useMemo(() => {
+    if (!urlState.date) return null;
+    // ignore a date the data does not cover — an empty view helps nobody
+    const dates = runs.map((run) => run.date);
+    if (!dates.length) return null;
+    const first = dates[0];
+    const last = dates[dates.length - 1];
+    return urlState.date >= first && urlState.date <= last ? urlState.date : null;
+  }, [runs, urlState.date]);
+  const deepLinkRunId = urlState.runId;
+
   const [selectedYear, setSelectedYear] = useState(() => {
+    if (deepLinkDate) return deepLinkDate.slice(0, 4);
+    if (urlState.year) return urlState.year;
     const years = availableYears(runs);
     return years.length ? String(years[years.length - 1]) : 'all';
   });
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(() =>
+    deepLinkDate ? Number(deepLinkDate.slice(5, 7)) : null
+  );
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    () => deepLinkDate
+  );
   const [selectedMetric, setSelectedMetric] =
     useState<MetricKey>('distance');
-  const [selectedRunId, setSelectedRunId] = useState<number | null>(null);
+  const [selectedRunId, setSelectedRunId] = useState<number | null>(() => {
+    if (urlState.runId === null) return null;
+    return runs.some((run) => run.run_id === urlState.runId)
+      ? urlState.runId
+      : null;
+  });
   const [quickFilter, setQuickFilter] = useState<QuickFilter>(null);
   const scrollOnSelect = useRef(false);
 
@@ -228,6 +254,36 @@ const Index = () => {
 
   const terrainRef = useRef<HTMLDivElement>(null);
 
+  // Keep the address bar in step with the view, so a copied link shows the
+  // same day / year / activity.
+  useEffect(() => {
+    writeUrlState({
+      date: selectedDate,
+      year: selectedDate ? null : selectedYear === 'all' ? null : selectedYear,
+      runId: selectedRunId,
+    });
+  }, [selectedDate, selectedYear, selectedRunId]);
+
+  // A deep link opens the day it talks about: bring the calendar into view.
+  useEffect(() => {
+    if (!deepLinkDate) return;
+    const timer = window.setTimeout(() => {
+      document
+        .getElementById('calendar')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [deepLinkDate]);
+
+  // A deep link to one activity opens its terrain, if it has a scene.
+  useEffect(() => {
+    if (!deepLinkRunId || !selectedRun) return;
+    const timer = window.setTimeout(() => {
+      terrainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 600);
+    return () => window.clearTimeout(timer);
+  }, [deepLinkRunId, selectedRun]);
+
   // A run with a baked scene opens the 3D card below the map; bring it into
   // view once the map's own scroll has landed.
   useEffect(() => {
@@ -335,7 +391,10 @@ const Index = () => {
 
           <div ref={terrainRef} className="scroll-mt-20">
             {selectedRun ? (
-              <TerrainCard run={selectedRun} />
+              <TerrainCard
+                run={selectedRun}
+                onClose={() => selectRun(null)}
+              />
             ) : null}
           </div>
 
