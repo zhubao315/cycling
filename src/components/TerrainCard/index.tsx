@@ -30,7 +30,7 @@ class TerrainBoundary extends Component<{
 }
 
 const Fallback = ({ message }: { message?: string }) => (
-  <div className="flex aspect-video w-full items-center justify-center rounded border border-[#333] bg-[#0f0f0f] text-sm text-[#8a8a8a]">
+  <div className="flex aspect-video w-full items-center justify-center rounded border border-[var(--terrain-border)] bg-[var(--terrain-fallback)] text-sm text-[var(--terrain-muted)]">
     {message}
   </div>
 );
@@ -66,15 +66,15 @@ const TerrainCard = ({ run, onClose }: TerrainCardProps) => {
 
   return (
     <section
-      className="mt-6 rounded-lg border border-[#333] bg-[#141414] p-4"
+      className="mt-6 rounded-lg border border-[var(--terrain-border)] bg-[var(--terrain-surface)] p-4"
       aria-labelledby={id}
     >
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id={id} className="text-xl font-bold text-[#e0ed5e]">
+        <h2 id={id} className="text-xl font-bold text-[var(--accent)]">
           3D 地形 · {run.name || 'Untitled'}
         </h2>
         <div className="flex items-center gap-3">
-          <p className="text-xs text-[#8a8a8a]">
+          <p className="text-xs text-[var(--terrain-muted)]">
             {new Date(run.start_date_local).toLocaleDateString('zh-CN')} ·{' '}
             {(run.distance / 1000).toFixed(2)} km
           </p>
@@ -82,7 +82,7 @@ const TerrainCard = ({ run, onClose }: TerrainCardProps) => {
             type="button"
             onClick={onClose}
             aria-label="关闭 3D 视图"
-            className="rounded-full p-1.5 text-[#8a8a8a] transition-colors hover:bg-[#262626] hover:text-white"
+            className="rounded-full p-1.5 text-[var(--terrain-muted)] transition-colors hover:bg-[var(--terrain-border)] hover:text-[var(--terrain-text)]"
           >
             <svg
               viewBox="0 0 20 20"
@@ -116,7 +116,7 @@ const TerrainCard = ({ run, onClose }: TerrainCardProps) => {
           <ElevationPanel sceneId={String(run.run_id)} hash={hash} />
         </div>
       </Suspense>
-      <p className="mt-2 text-right text-xs text-[#777]">
+      <p className="mt-2 text-right text-xs text-[var(--terrain-faint)]">
         在浏览器本地渲染，赛道坐标不会上传
       </p>
     </section>
