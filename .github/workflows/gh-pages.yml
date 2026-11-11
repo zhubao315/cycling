@@ -48,8 +48,8 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
-          # if your default branches is not master, please change it here
-          ref: master
+          # the branch that is published to Pages
+          ref: main
 
       - name: Cache Data Files
         if: inputs.save_data_in_github_cache

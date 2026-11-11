@@ -10,6 +10,7 @@ import CyclingDashboard from '@/components/CyclingDashboard';
 import DayDetail from '@/components/CyclingDashboard/DayDetail';
 import RunCalendar from '@/components/CyclingDashboard/RunCalendar';
 import SectionHeader from '@/components/CyclingDashboard/SectionHeader';
+import CyclingAnalysis from '@/components/CyclingDashboard/TrainingAnalysis';
 import useActivities from '@/hooks/useActivities';
 import { sceneHashOf } from '@/vert/scenes';
 import {
@@ -364,9 +365,22 @@ const Index = () => {
         />
       </section>
 
+      <section id="training" className={styles.section}>
+        <SectionHeader index="05" kicker="TRAINING ANALYSIS" title="训练分析">
+          <span className={styles.scopePill}>
+            {filterNote ?? scopeLabel(scope)}
+          </span>
+        </SectionHeader>
+
+        <CyclingAnalysis
+          runs={scopeRuns}
+          scopeLabel={filterNote ?? scopeLabel(scope)}
+        />
+      </section>
+
       <section id="explore" className={styles.section}>
         <SectionHeader
-          index="05"
+          index="06"
           kicker="ACTIVITY EXPLORER"
           title="地图与全部记录"
         >
