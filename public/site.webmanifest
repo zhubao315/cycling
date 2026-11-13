@@ -1,0 +1,23 @@
+{
+  "name": "ACTIVE / CYCLING｜zhubao315 的骑行生涯",
+  "short_name": "ACTIVE",
+  "description": "数千次骑行、累计里程与爬升、均速与海拔剖面、骑行足迹与 3D 地形，全部来自 COROS 原始记录。",
+  "start_url": "/cycling/",
+  "scope": "/cycling/",
+  "display": "standalone",
+  "lang": "zh-CN",
+  "theme_color": "#FBBF24",
+  "background_color": "#07111f",
+  "icons": [
+    {
+      "src": "/brand/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/brand/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
