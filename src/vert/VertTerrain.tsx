@@ -108,7 +108,7 @@ export default function VertTerrain({
           </p>
         )}
         <a
-          className="absolute bottom-1 right-2 text-[10px] text-[#7d7d7d] hover:text-[#cfcfcf]"
+          className="absolute bottom-1 right-2 text-[11px] text-[#7d7d7d] hover:text-[#cfcfcf]"
           href={TERRAIN_ATTRIBUTION_LINK.href}
           target="_blank"
           rel="noreferrer"

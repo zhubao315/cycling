@@ -342,7 +342,7 @@ button.geoCell:hover {
 
 .kpiLabel {
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -398,7 +398,7 @@ button.geoCell:hover {
 
 .recordDate {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   color: var(--muted);
@@ -501,7 +501,7 @@ button.geoCell:hover {
 }
 
 .fastButtonZh {
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 
@@ -613,7 +613,7 @@ button.geoCell:hover {
 }
 
 .detailGrid dt {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 
