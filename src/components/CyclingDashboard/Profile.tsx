@@ -1,14 +1,7 @@
 import { useMemo } from 'react';
-import SectionHeader from './SectionHeader';
 import useSiteMetadata from '@/hooks/useSiteMetadata';
-import BrandMark from '@/components/BrandMark';
 import SportIcon from '@/components/SportIcon';
-import {
-  computeGeo,
-  computeTotals,
-  formatNumber,
-  type RunRecord,
-} from '@/utils/cyclingStats';
+import { computeGeo, computeTotals, type RunRecord } from '@/utils/cyclingStats';
 import styles from './style.module.css';
 
 const dotDate = (date: string | null): string =>
@@ -18,6 +11,10 @@ interface IProfileProps {
   runs: RunRecord[];
 }
 
+/**
+ * Compact personal cycling archive. Counts, distance and climb belong to
+ * CoreMetrics; the profile is an identity strip plus a single metadata row.
+ */
 const Profile = ({ runs }: IProfileProps) => {
   const meta = useSiteMetadata();
   const totals = useMemo(() => computeTotals(runs), [runs]);
@@ -25,58 +22,37 @@ const Profile = ({ runs }: IProfileProps) => {
 
   const firstYear = totals.firstDate?.slice(0, 4) ?? '';
   const lastYear = totals.lastDate?.slice(0, 4) ?? '';
-  const span = firstYear && lastYear ? `${firstYear}—${lastYear}` : '';
+  const span = firstYear && lastYear ? `${firstYear}—${lastYear}` : '—';
   const sportKey = meta.siteUrl.replace(/\/$/, '').split('/').pop() ?? '';
+  const footprint = geo.countries.length
+    ? `${geo.countries.length}/${geo.provinces.length}/${geo.cities.length}`
+    : '—';
 
   return (
     <section className={styles.profile} aria-labelledby="profile-title">
-      <SectionHeader index="01" kicker="CYCLING PERFORMANCE & CAREER" title="个人骑行档案" />
-      <div className={styles.profileIdentity}>
-        <div className={styles.brandBlock}>
-          <BrandMark size={40} className={styles.brandMark} />
-          <span className={styles.brandLabel}>
-            <SportIcon name={sportKey} size={14} className={styles.brandIcon} />
-            <span>ACTIVE / {sportKey.toUpperCase()}</span>
-          </span>
-          {totals.lastDate ? (
-            <span className={styles.brandStamp}>数据截至 {dotDate(totals.lastDate)}</span>
-          ) : null}
-        </div>
-        <div className={styles.profileText}>
-          <h1 id="profile-title" className={styles.profileTitle}>
-            {meta.siteTitle}
-          </h1>
-          {span ? <p className={styles.profileYear}>{span}</p> : null}
-          {meta.tagline ? (
-            <p className={styles.tagline}>{meta.tagline}</p>
-          ) : null}
-          <p className={styles.profileFoot}>
-            {formatNumber(totals.count)} 次骑行 · {geo.countries.length} 个国家 ·{' '}
-            {geo.provinces.length} 个省份 · {geo.cities.length} 座城市
-            {geo.trackPlaced
-              ? ` · 地点来源：设备原生 ${formatNumber(
-                  geo.devicePlaced
-                )} 次，轨迹坐标解析 ${formatNumber(geo.trackPlaced)} 次`
-              : ''}
-          </p>
+      <div className={styles.identity}>
+        <SportIcon name={sportKey} size={24} className={styles.sportIcon} />
+        <div className={styles.identityText}>
+          <p className={styles.eyebrow}>{sportKey.toUpperCase()} / PERSONAL ARCHIVE</p>
+          <h1 id="profile-title" className={styles.profileTitle}>骑行生涯</h1>
+          {meta.tagline ? <p className={styles.tagline}>{meta.tagline}</p> : null}
         </div>
       </div>
-
-      <dl className={styles.facts}>
-        <div className={styles.fact}>
-          <dt>首次骑行</dt>
-          <dd title={totals.firstDate ?? ''}>{dotDate(totals.firstDate)}</dd>
+      <dl className={styles.metaTags}>
+        <div className={styles.metaTag}>
+          <dt>记录跨度</dt>
+          <dd>{span}</dd>
         </div>
-        <div className={styles.fact}>
-          <dt>最近一次</dt>
-          <dd title={totals.lastDate ?? ''}>{dotDate(totals.lastDate)}</dd>
+        <div className={styles.metaTag}>
+          <dt>最近骑行</dt>
+          <dd>{dotDate(totals.lastDate)}</dd>
         </div>
-        <div className={styles.fact}>
-          <dt>骑行活跃日</dt>
-          <dd>{formatNumber(totals.activeDays)} 天</dd>
+        <div className={styles.metaTag}>
+          <dt>骑行足迹</dt>
+          <dd>{footprint}</dd>
         </div>
-        <div className={styles.fact}>
-          <dt>主要骑行区域</dt>
+        <div className={styles.metaTag}>
+          <dt>主要区域</dt>
           <dd>{geo.homeProvince ?? '—'}</dd>
         </div>
       </dl>

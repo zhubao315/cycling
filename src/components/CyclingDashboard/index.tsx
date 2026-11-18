@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import ActivityScopeSwitch from '@/components/ActivityScopeSwitch';
 import Profile from './Profile';
 import CoreMetrics from './CoreMetrics';
 import YearTrend from './YearTrend';
@@ -78,6 +79,8 @@ const CyclingDashboard = ({
   return (
     <div className={styles.dashboard}>
       <Profile runs={runs} />
+
+      <ActivityScopeSwitch />
 
       <nav className={styles.scopeBar} aria-label="当前筛选范围">
         <span className={styles.scopeCaption}>当前范围</span>
