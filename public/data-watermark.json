@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "site": "cycling",
+  "generated_at": "2026-11-18T01:29:03.890Z",
+  "latest_activity_date": "2026-11-15",
+  "activity_count": 7938,
+  "source_updated_at": "2026-11-16T07:41:50.060Z",
+  "data_checksum": "sha256:7c315e9610184d469e7a3ed6584febdacb27cafeb76f2909743f6ad25b88bb3e",
+  "build_version": "48c349d",
+  "status": "ok"
+}

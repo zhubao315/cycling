@@ -7,6 +7,7 @@ import RunMap from '@/components/RunMap';
 import RunTable from '@/components/RunTable';
 import TerrainCard from '@/components/TerrainCard';
 import CyclingDashboard from '@/components/CyclingDashboard';
+import ActivityScopeSwitch from '@/components/ActivityScopeSwitch';
 import DayDetail from '@/components/CyclingDashboard/DayDetail';
 import RunCalendar from '@/components/CyclingDashboard/RunCalendar';
 import SectionHeader from '@/components/CyclingDashboard/SectionHeader';
@@ -344,6 +345,7 @@ const Index = () => {
 
   return (
     <Layout>
+      <ActivityScopeSwitch />
       <CyclingDashboard
         runs={runs}
         baseRuns={baseRuns}

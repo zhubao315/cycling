@@ -4,7 +4,6 @@ import {
   formatDurationLong,
   formatMetric,
   formatNumber,
-  formatPaceSeconds,
   metricNumber,
   type MetricKey,
   type YearPoint,
