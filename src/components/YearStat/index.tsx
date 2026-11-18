@@ -53,9 +53,11 @@ const YearStat = ({ year, onClick }: { year: string, onClick: (_year: string) =>
     0
   );
   return (
-    <div
-      className="cursor-pointer rounded-xl px-2 py-3 transition-colors hover:bg-white/5"
+    <button
+      type="button"
+      className="w-full cursor-pointer rounded-xl px-2 py-3 text-left transition-colors hover:bg-white/5"
       onClick={() => onClick(year)}
+      aria-label={`查看 ${year === 'Total' ? '全部历史' : year + ' 年'} 的记录`}
       {...eventHandlers}
     >
       <section className={styles.grid}>
@@ -78,7 +80,7 @@ const YearStat = ({ year, onClick }: { year: string, onClick: (_year: string) =>
         </Suspense>
       )}
       <hr className={styles.divider} />
-    </div>
+    </button>
   );
 };
 
