@@ -11,6 +11,7 @@
 [![Data](https://img.shields.io/badge/data-COROS%20MCP-fb923c?style=flat-square)](https://zhubao315.github.io/cycling/)
 [![Last commit](https://img.shields.io/github/last-commit/zhubao315/cycling?style=flat-square)](https://github.com/zhubao315/cycling/commits)
 [![License](https://img.shields.io/github/license/zhubao315/cycling?style=flat-square)](https://github.com/zhubao315/cycling/blob/main/LICENSE)
+[![Release](https://img.shields.io/badge/release-v2.0.0-07111F?style=flat-square)](https://github.com/zhubao315/cycling/releases/tag/v2.0.0)
 
 [🌐 在线站点](https://zhubao315.github.io/cycling/) · [📊 数据概览](#数据概览) · [🔄 自动同步](#自动同步) · [🛠 本地运行](#本地运行) · [🔗 相关站点](#相关站点)
 
@@ -41,6 +42,9 @@
 
 ## 站点亮点
 
+- **双口径视图**：标准骑行（≥3 km）/ 全部活动，KPI·趋势·日历·地图·表格使用同一数据范围
+- **个人档案 2.0**：紧凑身份区 + 元数据 + 数据范围切换整合进顶部功能区（不再单独占一行）
+- 年度统计与生涯摘要由构建期生成，分项与统计引擎逐字段对账
 - 全部骑行记录都在库里（当前次数见上方数据概览），日历热力图按年切换
 - 均速（km/h）与累计爬升统计
 - 单次轨迹地图、心率与里程
@@ -116,7 +120,7 @@ python run_page/coros_mcp_sync.py \
 
 - 品牌规范：[BRAND_SYSTEM.md](BRAND_SYSTEM.md)
 - 设计令牌：[src/styles/brand-tokens.css](src/styles/brand-tokens.css)
-- 标志与图标：[public/brand/](public/brand/)
+- 标志与图标：[public/brand/](public/brand/)（Navigation Icon 1.0 — Neo Sport Glyph 几何图标）
 - 社交预览图：[public/brand/og-*.png](public/brand/)
 
 ## 相关站点
@@ -135,3 +139,8 @@ python run_page/coros_mcp_sync.py \
 ## License
 
 MIT
+
+
+## 版本
+
+**ACTIVE 2.0.0**（tag `v2.0.0`，2026-11-18）—— 个人档案 2.0、品牌 3.0 与统一图标、数据水位 / 构建期分片、Impeccable / frontend-ui-engineering 复审修复、PR 质量门禁。详见 [CHANGELOG.md](CHANGELOG.md) 与 [Release](https://github.com/zhubao315/cycling/releases/tag/v2.0.0)。
