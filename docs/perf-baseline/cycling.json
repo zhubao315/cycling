@@ -1,0 +1,410 @@
+{
+  "site": "cycling",
+  "url": "https://zhubao315.github.io/cycling/",
+  "captured_at": "2026-11-23T06:51:22.421396+00:00",
+  "tool": "playwright-chromium (Python)",
+  "results": [
+    {
+      "viewport": "desktop",
+      "theme": "dark",
+      "title": "ACTIVE / 骑行｜zhubao315 的骑行生涯",
+      "lcp_ms": 2160,
+      "cls": 0.0004,
+      "inp_ms": 20.4,
+      "dom_content_loaded_ms": 1489.1,
+      "load_ms": 1490.1,
+      "resource_count": 22,
+      "script_bytes": 975561,
+      "json_bytes": 740800,
+      "scene_bytes": 0,
+      "scene_requests": 0,
+      "json_requests": 2,
+      "bytes_by_type": {
+        "script": 101951,
+        "other": 873610,
+        "link": 24964,
+        "img": 4447,
+        "css": 144088,
+        "fetch": 740800
+      },
+      "top_resources": [
+        {
+          "name": "tracks-2026.json",
+          "type": "fetch",
+          "size": 740800
+        },
+        {
+          "name": "vendors-dacc7336.js",
+          "type": "other",
+          "size": 446919
+        },
+        {
+          "name": "activities-2d185729.js",
+          "type": "other",
+          "size": 426691
+        },
+        {
+          "name": "index-ec5a8cb8.js",
+          "type": "script",
+          "size": 101951
+        },
+        {
+          "name": "inter-latin-wght-normal.woff2",
+          "type": "css",
+          "size": 48556
+        },
+        {
+          "name": "fira-code-500.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "fira-code-400.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "hero-cycling.webp",
+          "type": "css",
+          "size": 22380
+        }
+      ],
+      "page_errors": []
+    },
+    {
+      "viewport": "desktop",
+      "theme": "light",
+      "title": "ACTIVE / 骑行｜zhubao315 的骑行生涯",
+      "lcp_ms": 1396,
+      "cls": 0.0004,
+      "inp_ms": 15.6,
+      "dom_content_loaded_ms": 1045.2,
+      "load_ms": 1046.2,
+      "resource_count": 24,
+      "script_bytes": 975561,
+      "json_bytes": 740800,
+      "scene_bytes": 0,
+      "scene_requests": 0,
+      "json_requests": 2,
+      "bytes_by_type": {
+        "script": 101951,
+        "other": 873610,
+        "link": 24964,
+        "img": 4447,
+        "css": 121708,
+        "fetch": 740800
+      },
+      "top_resources": [
+        {
+          "name": "tracks-2026.json",
+          "type": "fetch",
+          "size": 740800
+        },
+        {
+          "name": "vendors-dacc7336.js",
+          "type": "other",
+          "size": 446919
+        },
+        {
+          "name": "activities-2d185729.js",
+          "type": "other",
+          "size": 426691
+        },
+        {
+          "name": "index-ec5a8cb8.js",
+          "type": "script",
+          "size": 101951
+        },
+        {
+          "name": "inter-latin-wght-normal.woff2",
+          "type": "css",
+          "size": 48556
+        },
+        {
+          "name": "fira-code-500.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "fira-code-400.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "index-285bbee6.css",
+          "type": "link",
+          "size": 15287
+        }
+      ],
+      "page_errors": []
+    },
+    {
+      "viewport": "mobile-390",
+      "theme": "dark",
+      "title": "ACTIVE / 骑行｜zhubao315 的骑行生涯",
+      "lcp_ms": 1448,
+      "cls": 0.0001,
+      "inp_ms": 16.3,
+      "dom_content_loaded_ms": 999.7,
+      "load_ms": 1000.8,
+      "resource_count": 22,
+      "script_bytes": 975561,
+      "json_bytes": 740800,
+      "scene_bytes": 0,
+      "scene_requests": 0,
+      "json_requests": 2,
+      "bytes_by_type": {
+        "script": 101951,
+        "other": 873610,
+        "link": 24964,
+        "img": 4447,
+        "css": 144088,
+        "fetch": 740800
+      },
+      "top_resources": [
+        {
+          "name": "tracks-2026.json",
+          "type": "fetch",
+          "size": 740800
+        },
+        {
+          "name": "vendors-dacc7336.js",
+          "type": "other",
+          "size": 446919
+        },
+        {
+          "name": "activities-2d185729.js",
+          "type": "other",
+          "size": 426691
+        },
+        {
+          "name": "index-ec5a8cb8.js",
+          "type": "script",
+          "size": 101951
+        },
+        {
+          "name": "inter-latin-wght-normal.woff2",
+          "type": "css",
+          "size": 48556
+        },
+        {
+          "name": "fira-code-500.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "fira-code-400.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "hero-cycling.webp",
+          "type": "css",
+          "size": 22380
+        }
+      ],
+      "page_errors": []
+    },
+    {
+      "viewport": "mobile-390",
+      "theme": "light",
+      "title": "ACTIVE / 骑行｜zhubao315 的骑行生涯",
+      "lcp_ms": 1320,
+      "cls": 0.0001,
+      "inp_ms": 14.4,
+      "dom_content_loaded_ms": 995.7,
+      "load_ms": 996.7,
+      "resource_count": 24,
+      "script_bytes": 975561,
+      "json_bytes": 740800,
+      "scene_bytes": 0,
+      "scene_requests": 0,
+      "json_requests": 2,
+      "bytes_by_type": {
+        "script": 101951,
+        "other": 873610,
+        "link": 24964,
+        "img": 4447,
+        "css": 121708,
+        "fetch": 740800
+      },
+      "top_resources": [
+        {
+          "name": "tracks-2026.json",
+          "type": "fetch",
+          "size": 740800
+        },
+        {
+          "name": "vendors-dacc7336.js",
+          "type": "other",
+          "size": 446919
+        },
+        {
+          "name": "activities-2d185729.js",
+          "type": "other",
+          "size": 426691
+        },
+        {
+          "name": "index-ec5a8cb8.js",
+          "type": "script",
+          "size": 101951
+        },
+        {
+          "name": "inter-latin-wght-normal.woff2",
+          "type": "css",
+          "size": 48556
+        },
+        {
+          "name": "fira-code-500.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "fira-code-400.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "index-285bbee6.css",
+          "type": "link",
+          "size": 15287
+        }
+      ],
+      "page_errors": []
+    },
+    {
+      "viewport": "mobile-360",
+      "theme": "dark",
+      "title": "ACTIVE / 骑行｜zhubao315 的骑行生涯",
+      "lcp_ms": 1632,
+      "cls": 0.0034,
+      "inp_ms": 9.7,
+      "dom_content_loaded_ms": 1210.2,
+      "load_ms": 1211.2,
+      "resource_count": 22,
+      "script_bytes": 975561,
+      "json_bytes": 740800,
+      "scene_bytes": 0,
+      "scene_requests": 0,
+      "json_requests": 2,
+      "bytes_by_type": {
+        "script": 101951,
+        "other": 873610,
+        "link": 24964,
+        "img": 4447,
+        "css": 144088,
+        "fetch": 740800
+      },
+      "top_resources": [
+        {
+          "name": "tracks-2026.json",
+          "type": "fetch",
+          "size": 740800
+        },
+        {
+          "name": "vendors-dacc7336.js",
+          "type": "other",
+          "size": 446919
+        },
+        {
+          "name": "activities-2d185729.js",
+          "type": "other",
+          "size": 426691
+        },
+        {
+          "name": "index-ec5a8cb8.js",
+          "type": "script",
+          "size": 101951
+        },
+        {
+          "name": "inter-latin-wght-normal.woff2",
+          "type": "css",
+          "size": 48556
+        },
+        {
+          "name": "fira-code-500.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "fira-code-400.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "hero-cycling.webp",
+          "type": "css",
+          "size": 22380
+        }
+      ],
+      "page_errors": []
+    },
+    {
+      "viewport": "mobile-360",
+      "theme": "light",
+      "title": "ACTIVE / 骑行｜zhubao315 的骑行生涯",
+      "lcp_ms": 1664,
+      "cls": 0.0034,
+      "inp_ms": 15.9,
+      "dom_content_loaded_ms": 1351.7,
+      "load_ms": 1352.6,
+      "resource_count": 24,
+      "script_bytes": 975561,
+      "json_bytes": 740800,
+      "scene_bytes": 0,
+      "scene_requests": 0,
+      "json_requests": 2,
+      "bytes_by_type": {
+        "script": 101951,
+        "other": 873610,
+        "link": 24964,
+        "img": 4447,
+        "css": 121708,
+        "fetch": 740800
+      },
+      "top_resources": [
+        {
+          "name": "tracks-2026.json",
+          "type": "fetch",
+          "size": 740800
+        },
+        {
+          "name": "vendors-dacc7336.js",
+          "type": "other",
+          "size": 446919
+        },
+        {
+          "name": "activities-2d185729.js",
+          "type": "other",
+          "size": 426691
+        },
+        {
+          "name": "index-ec5a8cb8.js",
+          "type": "script",
+          "size": 101951
+        },
+        {
+          "name": "inter-latin-wght-normal.woff2",
+          "type": "css",
+          "size": 48556
+        },
+        {
+          "name": "fira-code-400.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "fira-code-500.woff2",
+          "type": "css",
+          "size": 36576
+        },
+        {
+          "name": "index-285bbee6.css",
+          "type": "link",
+          "size": 15287
+        }
+      ],
+      "page_errors": []
+    }
+  ]
+}
