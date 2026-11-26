@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "site": "cycling",
-  "generated_at": "2026-11-25T03:05:24.237Z",
-  "latest_activity_date": "2026-11-25",
-  "activity_count": 7958,
-  "source_updated_at": "2026-11-25T03:05:24Z",
-  "data_checksum": "sha256:c573dbaf871f0f24e1c9166f61c65a475a6b8c639aad1fecac3b8e73321e840e",
-  "build_version": "bd548d4",
+  "generated_at": "2026-11-26T02:12:39.618Z",
+  "latest_activity_date": "2026-11-26",
+  "activity_count": 7960,
+  "source_updated_at": "2026-11-26T02:12:39Z",
+  "data_checksum": "sha256:e291f0b7644ee180d8b6f4d6c49dc0c77ca852537b5126099eb432de46a0b7de",
+  "build_version": "3cfc78a",
   "status": "ok"
 }
