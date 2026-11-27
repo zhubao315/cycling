@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Analytics } from '@vercel/analytics/react';
 import type { FeatureCollection, LineString } from 'geojson';
 import Layout from '@/components/Layout';
 import JourneyStats from '@/components/JourneyStats';
@@ -447,8 +446,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Enable Audiences in Vercel Analytics: https://vercel.com/docs/concepts/analytics/audiences/quickstart */}
-      {import.meta.env.VERCEL && <Analytics />}
     </Layout>
   );
 };
